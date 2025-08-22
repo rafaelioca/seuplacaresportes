@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seu Site</title>
+    <!-- Importando a fonte Ubuntu do Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <a href="index.html">
+                <img src="https://i.postimg.cc/y3WDRrz9/LOGO-2.png" alt="LOGO-2" style="height:70px; vertical-align:middle;">
+            </a>
+        </div>
+        <nav class="nav">
+            <a href="#">Home</a>
+            <a href="#">Campeonatos</a>
+            <a href="#">Notícias</a>
+        </nav>
+        <div class="header-actions">
+            <input type="text" class="search-box" placeholder="Buscar...">
+            <button class="search-btn" title="Buscar">
+                <img src="https://cdn-icons-png.flaticon.com/32/622/622669.png" alt="Pesquisar" style="width:24px; height:24px;">
+            </button>
+        </div>
+    </header>
+    <div class="sub-header" id="placar-faixa">
+      <div id="placar-loading" style="display:flex; align-items:center; justify-content:center; height:60px;">
+        <div style="width:32px; height:32px; border:4px solid #ccc; border-top:4px solid #222; border-radius:50%; animation:spin 1s linear infinite; margin-right:12px;"></div>
+        <span style="font-size:1.3rem; color:#222;">Carregando dados...</span>
+      </div>
+    </div>
+    <div style="width:950px; height:250px; margin:32px auto 0 auto; position:relative; display:flex; justify-content:center; align-items:center;">
+  <!-- Lembrete: Link da imagem da Publicidade1 \/ -->
+  <img src="https://static.wixstatic.com/media/55d98a_3287270d83ef4efabfdd1f52d0dc6ec2~mv2.jpg/v1/crop/x_0,y_1227,w_3634,h_808/fill/w_1153,h_195,fp_0.50_0.50,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/wolfgang-hasselmann-1ICIhK-ElJs-unsplash-edited.jpg" alt="Publicidade1" style="width:950px; height:250px; object-fit:cover; border-radius:12px; box-shadow:0 2px 12px #0002;">
+  <div style="position:absolute; top:0; left:0; background:#111; color:#FFD600; font-family:Ubuntu,sans-serif; font-weight:700; font-size:0.95rem; width:150px; height:25px; display:flex; align-items:center; justify-content:center; border-radius:7px; letter-spacing:1px; box-shadow:0 2px 8px #0003;">Publicidade</div>
+  </div>
+  <h2 class="destaques-titulo">DESTAQUES</h2>
+  <div class="destaque-abas" id="destaque-abas"></div>
+  <div class="destaque-quadro">
+    <div class="destaque-conteudo">
+      <div class="destaque-img" id="destaque-img">
+        <img src="" alt="Imagem destaque" id="destaque-img-src">
+      </div>
+      <div class="destaque-texto" id="destaque-texto">
+        <!-- Texto será inserido dinamicamente -->
+      </div>
+    </div>
+  </div>
+    </div>
+    <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    </style>
+    <script>
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS9MFvZCh0tVbBeZVVVEE7ufjMakoaL4shjAIQrC8YAUuwvtF8xyPPrc0jYTDWms0K1CVk05chIzOsT/pub?gid=0&single=true&output=csv';
+        const imgSize = 40;
+        const imgB2Size = 60;
+        let placarData = [];
+  let currentLine = 0;
+  let autoUpdateInterval = null;
+        const placarFaixa = document.getElementById('placar-faixa');
+
+        function parseLine(cols) {
+          // Mesma lógica anterior para montar o HTML do placar
+          const imgB2 = cols[1] ? cols[1].replace(/^"|"$/g, '').trim() : '';
+          const imgD2 = cols[3] ? cols[3].replace(/^"|"$/g, '').trim() : '';
+          const imgF2 = cols[5] ? cols[5].replace(/^"|"$/g, '').trim() : '';
+          const numG2 = cols[6] ? cols[6].replace(/^"|"$/g, '').trim() : '';
+          const numH2 = cols[7] ? cols[7].replace(/^"|"$/g, '').trim() : '';
+          const imgJ2 = cols[9] ? cols[9].replace(/^"|"$/g, '').trim() : '';
+          const imgL2 = cols[11] ? cols[11].replace(/^"|"$/g, '').trim() : '';
+          const numM2 = cols[12] ? cols[12].replace(/^"|"$/g, '').trim() : '';
+          const numN2 = cols[13] ? cols[13].replace(/^"|"$/g, '').trim() : '';
+          const o2 = cols[14] ? cols[14].replace(/^"|"$/g, '').trim() : '';
+          const imgQ2 = cols[16] ? cols[16].replace(/^"|"$/g, '').trim() : '';
+          const r2 = cols[17] ? cols[17].replace(/^"|"$/g, '').trim() : '';
+          const s2 = cols[18] ? cols[18].replace(/^"|"$/g, '').trim() : '';
+          const imgT2 = cols[19] ? cols[19].replace(/^"|"$/g, '').trim() : '';
+          const u2 = cols[20] ? cols[20].replace(/^"|"$/g, '').trim() : '';
+          const imgW2 = cols[22] ? cols[22].replace(/^"|"$/g, '').trim() : '';
+          const x2 = cols[23] ? cols[23].replace(/^"|"$/g, '').trim() : '';
+          const y2 = cols[24] ? cols[24].replace(/^"|"$/g, '').trim() : '';
+          const imgZ2 = cols[25] ? cols[25].replace(/^"|"$/g, '').trim() : '';
+          const aa2 = cols[26] ? cols[26].replace(/^"|"$/g, '').trim() : '';
+          const imgAC2 = cols[28] ? cols[28].replace(/^"|"$/g, '').trim() : '';
+          const ad2 = cols[29] ? cols[29].replace(/^"|"$/g, '').trim() : '';
+          const ae2 = cols[30] ? cols[30].replace(/^"|"$/g, '').trim() : '';
+          const imgAF2 = cols[31] ? cols[31].replace(/^"|"$/g, '').trim() : '';
+          let html = `<div class='placar-transicao' style='display: flex; align-items: center; height: 60px;'>`;
+          if(imgB2.startsWith('http')) html += `<img src='${imgB2}' style='height:${imgB2Size}px; margin-left:7cm;'>`;
+          html += `<div style='width:2px; height:40px; background:#111; margin:0 24px;'></div>`;
+          if(imgD2.startsWith('http')) html += `<img src='${imgD2}' style='height:${imgSize}px;'>`;
+          html += `<span style='font-size:2rem; margin:0 16px;'>${numG2}</span>`;
+          html += `<span style='font-size:2rem; color:#111; margin:0 4px;'>:</span>`;
+          html += `<span style='font-size:2rem; margin:0 8px;'>${numH2}</span>`;
+          if(imgF2.startsWith('http')) html += `<img src='${imgF2}' style='height:${imgSize}px; margin-left:16px;'>`;
+          if(imgJ2 || numM2 || numN2 || imgL2) {
+            html += `<div style='width:2px; height:40px; background:#111; margin:0 24px;'></div>`;
+            if(imgJ2.startsWith('http')) html += `<img src='${imgJ2}' style='height:${imgSize}px;'>`;
+            if(numM2) html += `<span style='font-size:2rem; margin:0 16px;'>${numM2}</span>`;
+            html += `<span style='font-size:2rem; color:#111; margin:0 4px;'>:</span>`;
+            if(numN2) html += `<span style='font-size:2rem; margin:0 8px;'>${numN2}</span>`;
+            if(imgL2.startsWith('http')) html += `<img src='${imgL2}' style='height:${imgSize}px; margin-left:16px;'>`;
+          }
+          if(o2) {
+            html += `<div style='width:2px; height:40px; background:#111; margin:0 24px;'></div>`;
+            if(imgQ2.startsWith('http')) html += `<img src='${imgQ2}' style='height:${imgSize}px;'>`;
+            if(r2) html += `<span style='font-size:2rem; margin:0 8px;'>${r2}</span>`;
+            html += `<span style='font-size:2rem; color:#111; margin:0 4px;'>:</span>`;
+            if(s2) html += `<span style='font-size:2rem; margin:0 8px;'>${s2}</span>`;
+            if(imgT2.startsWith('http')) html += `<img src='${imgT2}' style='height:${imgSize}px; margin-left:8px;'>`;
+          }
+          if(u2) {
+            html += `<div style='width:2px; height:40px; background:#111; margin:0 24px;'></div>`;
+            if(imgW2.startsWith('http')) html += `<img src='${imgW2}' style='height:${imgSize}px;'>`;
+            if(x2) html += `<span style='font-size:2rem; margin:0 8px;'>${x2}</span>`;
+            html += `<span style='font-size:2rem; color:#111; margin:0 4px;'>:</span>`;
+            if(y2) html += `<span style='font-size:2rem; margin:0 8px;'>${y2}</span>`;
+            if(imgZ2.startsWith('http')) html += `<img src='${imgZ2}' style='height:${imgSize}px; margin-left:8px;'>`;
+          }
+          if(aa2) {
+            html += `<div style='width:2px; height:40px; background:#111; margin:0 24px;'></div>`;
+            if(imgAC2.startsWith('http')) html += `<img src='${imgAC2}' style='height:${imgSize}px;'>`;
+            if(ad2) html += `<span style='font-size:2rem; margin:0 8px;'>${ad2}</span>`;
+            html += `<span style='font-size:2rem; color:#111; margin:0 4px;'>:</span>`;
+            if(ae2) html += `<span style='font-size:2rem; margin:0 8px;'>${ae2}</span>`;
+            if(imgAF2.startsWith('http')) html += `<img src='${imgAF2}' style='height:${imgSize}px; margin-left:8px;'>`;
+          }
+          html += `</div>`;
+          return html;
+        }
+
+        function showPlacar(lineIdx) {
+          if (placarData[lineIdx]) {
+            placarFaixa.style.opacity = 0;
+            setTimeout(() => {
+              placarFaixa.innerHTML = placarData[lineIdx];
+              placarFaixa.style.opacity = 1;
+            }, 400);
+          }
+        }
+
+        fetch(csvUrl)
+          .then(res => res.text())
+          .then(csv => {
+            const lines = csv.split('\n').filter(l => l.trim());
+            console.log('Conteúdo bruto do CSV:', csv);
+            placarData = [];
+            placarFaixa.style.transition = 'opacity 0.6s';
+            // Sempre processa linhas 2 e 3
+            // Descobre quantas linhas exibir pelo valor da célula AI1
+            let numLinhas = 1;
+            if (lines.length > 0) {
+              const headerCols = lines[0].match(/("[^"]*"|[^,]+)/g) || [];
+              const ai1Index = headerCols.length - 1;
+              const ai1Value = headerCols[ai1Index] ? headerCols[ai1Index].replace(/^"|"$/g, '').trim() : '';
+              if (!isNaN(parseInt(ai1Value))) {
+                numLinhas = parseInt(ai1Value);
+              }
+            }
+            // Exibe apenas as linhas indicadas
+            for (let i = 1; i <= numLinhas && i < lines.length; i++) {
+              const cols = lines[i].match(/("[^"]*"|[^,]+)/g) || [];
+              if (cols[0] && cols[0].replace(/^"|"$/g, '').trim() !== '') {
+                placarData.push(parseLine(cols));
+              }
+            }
+            if (placarData.length > 0) {
+              showPlacar(0);
+              if (!window.placarAlternaInterval) {
+                window.placarAlternaInterval = setInterval(() => {
+                  currentLine = (currentLine + 1) % placarData.length;
+                  showPlacar(currentLine);
+                }, 7000);
+              }
+            } else {
+              placarFaixa.innerHTML = 'Dados insuficientes.';
+              console.warn('CSV não possui linhas suficientes para exibir dados.');
+            }
+          })
+          .catch((err) => {
+            placarFaixa.innerHTML = '<span style="color:#c00; font-size:1.2rem;">Erro ao carregar dados.</span>';
+            console.error('Erro ao buscar CSV:', err);
+            alert('Erro ao carregar os dados do placar. Veja o console para detalhes.');
+          });
+        // Gerar abas dinamicamente a partir das células A2 a A6 do CSV
+const abasUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS9MFvZCh0tVbBeZVVVEE7ufjMakoaL4shjAIQrC8YAUuwvtF8xyPPrc0jYTDWms0K1CVk05chIzOsT/pub?gid=311692731&single=true&output=csv';
+let destaqueData = [];
+let destaqueAtual = 0;
+let destaqueInterval = null;
+function exibeDestaque(idx) {
+  if (!destaqueData[idx]) return;
+  document.getElementById('destaque-img-src').src = destaqueData[idx].img;
+  document.getElementById('destaque-texto').textContent = destaqueData[idx].texto;
+  // Atualiza aba ativa
+  document.querySelectorAll('.aba').forEach((el, i) => {
+    el.classList.toggle('aba-ativa', i === idx);
+  });
+}
+fetch(abasUrl)
+  .then(res => res.text())
+  .then(csv => {
+    const linhas = csv.split('\n');
+    destaqueData = [];
+    for(let i=1; i<=5; i++) { // Linhas 2 a 6
+      if(linhas[i]) {
+        const cols = linhas[i].match(/("[^"]*"|[^,]+)/g) || [];
+        // A: nome da aba, B: imagem, C: texto
+        destaqueData.push({
+          aba: cols[0] ? cols[0].replace(/^"|"$/g, '').trim() : '',
+          img: cols[1] ? cols[1].replace(/^"|"$/g, '').trim() : '',
+          texto: cols[2] ? cols[2].replace(/^"|"$/g, '').trim() : ''
+        });
+      }
+    }
+    // Monta abas
+    const abasContainer = document.getElementById('destaque-abas');
+    abasContainer.innerHTML = '';
+    destaqueData.forEach((item, idx) => {
+      if(item.aba) {
+        const div = document.createElement('div');
+        div.className = 'aba' + (idx === 0 ? ' aba-ativa' : '');
+        div.textContent = item.aba;
+        div.onclick = () => {
+          clearInterval(destaqueInterval);
+          exibeDestaque(idx);
+          destaqueAtual = idx;
+          // Reinicia alternância após 15s sem clique
+          setTimeout(() => {
+            if(!destaqueInterval) {
+              destaqueInterval = setInterval(() => {
+                destaqueAtual = (destaqueAtual + 1) % destaqueData.length;
+                exibeDestaque(destaqueAtual);
+              }, 7000);
+            }
+          }, 15000);
+          destaqueInterval = null;
+        };
+        abasContainer.appendChild(div);
+      }
+    });
+    // Exibe primeiro destaque
+    exibeDestaque(0);
+    // Alternância automática
+    destaqueInterval = setInterval(() => {
+      destaqueAtual = (destaqueAtual + 1) % destaqueData.length;
+      exibeDestaque(destaqueAtual);
+    }, 7000);
+  })
+  .catch(() => {
+    document.getElementById('destaque-abas').innerHTML = '<div class="aba">Erro ao carregar abas</div>';
+    document.getElementById('destaque-img-src').src = '';
+    document.getElementById('destaque-texto').textContent = 'Erro ao carregar destaques.';
+  });
+    </script>
+    <main>
+    </main>
+</body>
+</html>
