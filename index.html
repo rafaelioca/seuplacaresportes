@@ -1,265 +1,576 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seu Site</title>
-    <!-- Importando a fonte Ubuntu do Google Fonts -->
-    <link href="https://fonts.googleapis.com/css?family=Ubuntu:400,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seu Site</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .resultados-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e0e0e0;
+      padding: 10px 0;
+      width: 100%;
+      overflow-x: auto;
+    }
+    .jogo-resultado {
+      display: flex;
+      align-items: center;
+      margin: 0 10px;
+      background: transparent;
+    }
+    .separador-vertical {
+      width: 2px;
+      height: 40px;
+      background: #bdbdbd;
+      margin: 0 10px;
+    }
+    .logo-competicao {
+      height: 60px;
+      margin-right: 20px;
+    }
+    .logo-time {
+      height: 32px;
+      width: 32px;
+      object-fit: contain;
+      margin: 0 5px;
+      background: transparent;
+    }
+    .placar-time {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin: 0 5px;
+    }
+    .placar-separador {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin: 0 5px;
+    }
+    @media (max-width: 600px) {
+      .resultados-bar {
+        flex-wrap: nowrap;
+        padding: 5px 0;
+      }
+      .logo-competicao {
+        height: 40px;
+        margin-right: 10px;
+      }
+      .logo-time {
+        height: 22px;
+        width: 22px;
+        margin: 0 2px;
+      }
+      .separador-vertical {
+        height: 22px;
+        margin: 0 4px;
+      }
+      .placar-time, .placar-separador {
+        font-size: 1em;
+        margin: 0 2px;
+      }
+    }
+    @media (max-width: 700px) {
+      .destaques {
+        width: 98% !important;
+        min-width: 0;
+        margin: 0 auto;
+      }
+      .destaque-abas {
+        width: 100% !important;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .aba {
+        font-size: 1rem;
+        padding: 0.5rem 0;
+        border-radius: 8px;
+      }
+      .destaque-quadro {
+        flex-direction: column;
+        align-items: center;
+        height: auto !important;
+        gap: 16px;
+        padding: 12px 0;
+      }
+      #img-destaque {
+        width: 90vw !important;
+        max-width: 98vw;
+        height: auto !important;
+        margin-bottom: 8px;
+      }
+      #texto-destaque {
+        font-size: 1.1rem !important;
+        max-width: 98vw;
+        text-align: left;
+      }
+    }
+    .destaques {
+      margin: 20px 0;
+      text-align: center;
+    }
+    .destaques-titulo {
+      font-size: 3.5rem;
+      font-weight: bold;
+      margin-bottom: 0.5vw;
+      text-align: left;
+      width: 100%;
+      padding-left: 0;
+      margin-left: 0;
+    }
+    .destaque-abas {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    .aba {
+      flex: 1;
+      background: #000;
+      color: #FFD600;
+      font-family: 'Ubuntu', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      text-align: center;
+      padding: 0.8vw 0 0.6vw 0;
+      cursor: pointer;
+      border-top-left-radius: 0.8vw;
+      border-top-right-radius: 0.8vw;
+      border-right: 0.3vw solid #fff;
+      transition: background 0.2s, color 0.2s;
+    }
+    .aba:last-child {
+      border-right: none;
+    }
+    .aba-ativa {
+      background: #FFD600;
+      color: #111;
+    }
+    .destaque-quadro {
+      background: #FFF9C4;
+      border: 6px solid #FFD600;
+      border-radius: 0 0 2vw 2vw;
+      width: 100%;
+      height: 350px;
+      margin: 0 auto;
+      display: flex;
+      align-items: flex-start;
+      gap: 32px;
+    }
+    #img-destaque {
+      height: 300px;
+      width: 420px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px #ccc;
+      object-fit: fill;
+    }
+    #texto-destaque {
+      font-size: 2rem;
+      color: #222;
+      font-family: 'Ubuntu', Arial, sans-serif;
+      max-width: 60%;
+      text-align: left;
+    }
+    .classificacao-campeonato {
+      width: 40%;
+      max-width: 360px;
+      margin: 40px auto 0 auto;
+      padding: 12px 0;
+    }
+    .classificacao-campeonato h2 {
+      font-size: 2.2rem;
+      font-weight: bold;
+      margin: 0;
+    }
+    .tabela-classificacao {
+      width: 100%;
+      border-collapse: collapse;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      color: #fff;
+    }
+    .tabela-classificacao th, .tabela-classificacao td {
+      padding: 2px 1px;
+      text-align: center;
+      color: #fff;
+    }
+    .tabela-classificacao th {
+      background: #FFD600;
+      color: #000;
+    }
+    .tabela-classificacao tbody tr:nth-child(even) {
+      background: #111;
+    }
+    .tabela-classificacao tbody tr:nth-child(odd) {
+      background: #000;
+    }
+  </style>
 </head>
 <body>
-    <header class="header">
-        <div class="logo">
-            <a href="index.html">
-                <img src="https://i.postimg.cc/y3WDRrz9/LOGO-2.png" alt="LOGO-2" style="height:70px; vertical-align:middle;">
-            </a>
-        </div>
-        <nav class="nav">
-            <a href="#">Home</a>
-            <a href="#">Campeonatos</a>
-            <a href="#">Notícias</a>
-        </nav>
-        <div class="header-actions">
-            <input type="text" class="search-box" placeholder="Buscar...">
-            <button class="search-btn" title="Buscar">
-                <img src="https://cdn-icons-png.flaticon.com/32/622/622669.png" alt="Pesquisar" style="width:24px; height:24px;">
-            </button>
-        </div>
-    </header>
-    <div class="sub-header" id="placar-faixa">
-      <div id="placar-loading" style="display:flex; align-items:center; justify-content:center; height:60px;">
-        <div style="width:32px; height:32px; border:4px solid #ccc; border-top:4px solid #222; border-radius:50%; animation:spin 1s linear infinite; margin-right:12px;"></div>
-        <span style="font-size:1.3rem; color:#222;">Carregando dados...</span>
-      </div>
+  <header class="header">
+    <div class="logo">
+      <img src="https://i.postimg.cc/y3WDRrz9/LOGO-2.png" alt="Logo">
     </div>
-    <div style="width:950px; height:250px; margin:32px auto 0 auto; position:relative; display:flex; justify-content:center; align-items:center;">
-  <!-- Lembrete: Link da imagem da Publicidade1 \/ -->
-  <img src="https://static.wixstatic.com/media/55d98a_3287270d83ef4efabfdd1f52d0dc6ec2~mv2.jpg/v1/crop/x_0,y_1227,w_3634,h_808/fill/w_1153,h_195,fp_0.50_0.50,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/wolfgang-hasselmann-1ICIhK-ElJs-unsplash-edited.jpg" alt="Publicidade1" style="width:950px; height:250px; object-fit:cover; border-radius:12px; box-shadow:0 2px 12px #0002;">
-  <div style="position:absolute; top:0; left:0; background:#111; color:#FFD600; font-family:Ubuntu,sans-serif; font-weight:700; font-size:0.95rem; width:150px; height:25px; display:flex; align-items:center; justify-content:center; border-radius:7px; letter-spacing:1px; box-shadow:0 2px 8px #0003;">Publicidade</div>
+    <nav class="nav">
+      <a href="#">Home</a>
+      <a href="#">Sobre</a>
+      <a href="#">Contato</a>
+    </nav>
+    <div class="search-area">
+      <input type="text" class="search-box" placeholder="Buscar...">
+      <button class="search-btn" title="Buscar">
+        <img src="https://cdn-icons-png.flaticon.com/32/622/622669.png" alt="Pesquisar" style="height:20px;">
+      </button>
+    </div>
+  </header>
+
+  <div class="resultados-bar">
+    <img id="logo-competicao" class="logo-competicao" src="" alt="Logo Competição">
+    <div class="jogo-resultado" id="jogo1">
+      <img class="logo-time" id="logo-time1" src="" alt="Time 1">
+      <span class="placar-time" id="placar-time1">0</span>
+      <span class="placar-separador">:</span>
+      <span class="placar-time" id="placar-time2">0</span>
+      <img class="logo-time" id="logo-time2" src="" alt="Time 2">
+    </div>
+    <div id="jogo2-container" style="display: flex;"></div>
   </div>
-  <h2 class="destaques-titulo">DESTAQUES</h2>
-  <div class="destaque-abas" id="destaque-abas"></div>
-  <div class="destaque-quadro">
-    <div class="destaque-conteudo">
-      <div class="destaque-img" id="destaque-img">
-        <img src="" alt="Imagem destaque" id="destaque-img-src">
-      </div>
-      <div class="destaque-texto" id="destaque-texto">
-        <!-- Texto será inserido dinamicamente -->
-      </div>
+
+  <div class="publicidade1" style="width:100%;display:flex;justify-content:center;margin:40px 0;">
+    <img id="img-publicidade1" src="" alt="Publicidade 1" style="width:80%;max-width:1300px;height:auto;display:block;border-radius:8px;object-fit:contain;">
+  </div>
+
+  <div class="destaques" style="width:55%;margin:0 auto;">
+    <h2 class="destaques-titulo" style="width:100%;text-align:left;">Destaques</h2>
+    <div class="destaque-abas" style="width:100%;margin:0 auto;">
+      <div class="aba aba-ativa" id="aba1">Aba 1</div>
+      <div class="aba" id="aba2">Aba 2</div>
+      <div class="aba" id="aba3">Aba 3</div>
+      <div class="aba" id="aba4">Aba 4</div>
+      <div class="aba" id="aba5">Aba 5</div>
+    </div>
+    <div class="destaque-quadro" style="width:100%;margin:0 auto;display:flex;align-items:flex-start;gap:32px;">
+      <img id="img-destaque" src="" alt="Imagem do destaque" style="height:230px;width:321px;border-radius:12px;box-shadow:0 2px 8px #ccc;object-fit:fill;">
+      <div id="texto-destaque" style="font-size:2rem;color:#222;font-family:'Ubuntu',Arial,sans-serif;max-width:60%;text-align:left;"></div>
     </div>
   </div>
+
+  <div class="campeonato-header" style="width:100%;display:flex;align-items:center;justify-content:center;gap:24px;margin:40px auto 0 auto;">
+    <img id="logo-campeonato" src="" alt="Logo Campeonato" style="height:72px;width:72px;object-fit:contain;border-radius:12px;">
+    <h2 id="titulo-campeonato" style="font-size:3rem;font-weight:bold;margin:0;">Título do Campeonato</h2>
+  </div>
+  <div style="width:100%;display:flex;justify-content:center;align-items:flex-start;gap:0;">
+    <div class="resultados-campeonato" style="width:480px;max-width:520px;margin:8px 0 0 0;padding:12px 0;align-self:flex-start;">
+      <table class="tabela-classificacao" style="width:100%;border-collapse:collapse;background:#000;border-radius:12px;overflow:hidden;">
+        <thead style="background:#FFD600;">
+          <tr>
+            <th colspan="7" style="padding:8px 0;text-align:center;font-size:1.3rem;color:#111;">Resultados</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-resultados" style="background:#000;"></tbody>
+      </table>
     </div>
-    <style>
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    </style>
-    <script>
-        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS9MFvZCh0tVbBeZVVVEE7ufjMakoaL4shjAIQrC8YAUuwvtF8xyPPrc0jYTDWms0K1CVk05chIzOsT/pub?gid=0&single=true&output=csv';
-        const imgSize = 40;
-        const imgB2Size = 60;
-        let placarData = [];
-  let currentLine = 0;
-  let autoUpdateInterval = null;
-        const placarFaixa = document.getElementById('placar-faixa');
+    <div class="classificacao-campeonato" style="width:40%;max-width:360px;margin:8px auto 0 auto;padding:12px 0;">
+      <table class="tabela-classificacao" style="width:100%;border-collapse:collapse;background:#000;border-radius:12px;overflow:hidden;">
+        <thead style="background:#FFD600;">
+          <tr>
+            <th style="padding:2px 1px;text-align:center;">Pos</th>
+            <th style="padding:2px 1px;text-align:center;"></th>
+            <th style="padding:2px 2px;text-align:left;" id="th-info-campeonato"></th>
+            <th style="padding:2px 1px;text-align:center;">Pts</th>
+            <th style="padding:2px 1px;text-align:center;">SG</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-classificacao"></tbody>
+      </table>
+    </div>
+  </div>
 
-        function parseLine(cols) {
-          // Mesma lógica anterior para montar o HTML do placar
-          const imgB2 = cols[1] ? cols[1].replace(/^"|"$/g, '').trim() : '';
-          const imgD2 = cols[3] ? cols[3].replace(/^"|"$/g, '').trim() : '';
-          const imgF2 = cols[5] ? cols[5].replace(/^"|"$/g, '').trim() : '';
-          const numG2 = cols[6] ? cols[6].replace(/^"|"$/g, '').trim() : '';
-          const numH2 = cols[7] ? cols[7].replace(/^"|"$/g, '').trim() : '';
-          const imgJ2 = cols[9] ? cols[9].replace(/^"|"$/g, '').trim() : '';
-          const imgL2 = cols[11] ? cols[11].replace(/^"|"$/g, '').trim() : '';
-          const numM2 = cols[12] ? cols[12].replace(/^"|"$/g, '').trim() : '';
-          const numN2 = cols[13] ? cols[13].replace(/^"|"$/g, '').trim() : '';
-          const o2 = cols[14] ? cols[14].replace(/^"|"$/g, '').trim() : '';
-          const imgQ2 = cols[16] ? cols[16].replace(/^"|"$/g, '').trim() : '';
-          const r2 = cols[17] ? cols[17].replace(/^"|"$/g, '').trim() : '';
-          const s2 = cols[18] ? cols[18].replace(/^"|"$/g, '').trim() : '';
-          const imgT2 = cols[19] ? cols[19].replace(/^"|"$/g, '').trim() : '';
-          const u2 = cols[20] ? cols[20].replace(/^"|"$/g, '').trim() : '';
-          const imgW2 = cols[22] ? cols[22].replace(/^"|"$/g, '').trim() : '';
-          const x2 = cols[23] ? cols[23].replace(/^"|"$/g, '').trim() : '';
-          const y2 = cols[24] ? cols[24].replace(/^"|"$/g, '').trim() : '';
-          const imgZ2 = cols[25] ? cols[25].replace(/^"|"$/g, '').trim() : '';
-          const aa2 = cols[26] ? cols[26].replace(/^"|"$/g, '').trim() : '';
-          const imgAC2 = cols[28] ? cols[28].replace(/^"|"$/g, '').trim() : '';
-          const ad2 = cols[29] ? cols[29].replace(/^"|"$/g, '').trim() : '';
-          const ae2 = cols[30] ? cols[30].replace(/^"|"$/g, '').trim() : '';
-          const imgAF2 = cols[31] ? cols[31].replace(/^"|"$/g, '').trim() : '';
-          let html = `<div class='placar-transicao' style='display: flex; align-items: center; height: 60px;'>`;
-          if(imgB2.startsWith('http')) html += `<img src='${imgB2}' style='height:${imgB2Size}px; margin-left:7cm;'>`;
-          html += `<div style='width:2px; height:40px; background:#111; margin:0 24px;'></div>`;
-          if(imgD2.startsWith('http')) html += `<img src='${imgD2}' style='height:${imgSize}px;'>`;
-          html += `<span style='font-size:2rem; margin:0 16px;'>${numG2}</span>`;
-          html += `<span style='font-size:2rem; color:#111; margin:0 4px;'>:</span>`;
-          html += `<span style='font-size:2rem; margin:0 8px;'>${numH2}</span>`;
-          if(imgF2.startsWith('http')) html += `<img src='${imgF2}' style='height:${imgSize}px; margin-left:16px;'>`;
-          if(imgJ2 || numM2 || numN2 || imgL2) {
-            html += `<div style='width:2px; height:40px; background:#111; margin:0 24px;'></div>`;
-            if(imgJ2.startsWith('http')) html += `<img src='${imgJ2}' style='height:${imgSize}px;'>`;
-            if(numM2) html += `<span style='font-size:2rem; margin:0 16px;'>${numM2}</span>`;
-            html += `<span style='font-size:2rem; color:#111; margin:0 4px;'>:</span>`;
-            if(numN2) html += `<span style='font-size:2rem; margin:0 8px;'>${numN2}</span>`;
-            if(imgL2.startsWith('http')) html += `<img src='${imgL2}' style='height:${imgSize}px; margin-left:16px;'>`;
-          }
-          if(o2) {
-            html += `<div style='width:2px; height:40px; background:#111; margin:0 24px;'></div>`;
-            if(imgQ2.startsWith('http')) html += `<img src='${imgQ2}' style='height:${imgSize}px;'>`;
-            if(r2) html += `<span style='font-size:2rem; margin:0 8px;'>${r2}</span>`;
-            html += `<span style='font-size:2rem; color:#111; margin:0 4px;'>:</span>`;
-            if(s2) html += `<span style='font-size:2rem; margin:0 8px;'>${s2}</span>`;
-            if(imgT2.startsWith('http')) html += `<img src='${imgT2}' style='height:${imgSize}px; margin-left:8px;'>`;
-          }
-          if(u2) {
-            html += `<div style='width:2px; height:40px; background:#111; margin:0 24px;'></div>`;
-            if(imgW2.startsWith('http')) html += `<img src='${imgW2}' style='height:${imgSize}px;'>`;
-            if(x2) html += `<span style='font-size:2rem; margin:0 8px;'>${x2}</span>`;
-            html += `<span style='font-size:2rem; color:#111; margin:0 4px;'>:</span>`;
-            if(y2) html += `<span style='font-size:2rem; margin:0 8px;'>${y2}</span>`;
-            if(imgZ2.startsWith('http')) html += `<img src='${imgZ2}' style='height:${imgSize}px; margin-left:8px;'>`;
-          }
-          if(aa2) {
-            html += `<div style='width:2px; height:40px; background:#111; margin:0 24px;'></div>`;
-            if(imgAC2.startsWith('http')) html += `<img src='${imgAC2}' style='height:${imgSize}px;'>`;
-            if(ad2) html += `<span style='font-size:2rem; margin:0 8px;'>${ad2}</span>`;
-            html += `<span style='font-size:2rem; color:#111; margin:0 4px;'>:</span>`;
-            if(ae2) html += `<span style='font-size:2rem; margin:0 8px;'>${ae2}</span>`;
-            if(imgAF2.startsWith('http')) html += `<img src='${imgAF2}' style='height:${imgSize}px; margin-left:8px;'>`;
-          }
-          html += `</div>`;
-          return html;
-        }
+  <script>
+  fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vS9MFvZCh0tVbBeZVVVEE7ufjMakoaL4shjAIQrC8YAUuwvtF8xyPPrc0jYTDWms0K1CVk05chIzOsT/pub?gid=988084325&single=true&output=csv')
+    .then(response => response.text())
+    .then(csv => {
+      const linhas = csv.split('\n');
+      const primeiraLinha = linhas[0].split(',');
+      const logoUrl = primeiraLinha[6]; // G1 é o índice 6
+      document.querySelector('.logo-competicao').src = logoUrl;
+    });
+  </script>
+  <script>
+  fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vS9MFvZCh0tVbBeZVVVEE7ufjMakoaL4shjAIQrC8YAUuwvtF8xyPPrc0jYTDWms0K1CVk05chIzOsT/pub?gid=988084325&single=true&output=csv')
+    .then(response => response.text())
+    .then(csv => {
+      const linhas = csv.split('\n');
+      const segundaLinha = linhas[1].split(',');
+      document.getElementById('logo-time1').src = segundaLinha[6]; // G2
+      document.getElementById('logo-time2').src = segundaLinha[7]; // H2
+      document.getElementById('placar-time1').textContent = segundaLinha[2]; // C2
+      document.getElementById('placar-time2').textContent = segundaLinha[3]; // D2
 
-        function showPlacar(lineIdx) {
-          if (placarData[lineIdx]) {
-            placarFaixa.style.opacity = 0;
-            setTimeout(() => {
-              placarFaixa.innerHTML = placarData[lineIdx];
-              placarFaixa.style.opacity = 1;
-            }, 400);
-          }
-        }
-
-        fetch(csvUrl)
-          .then(res => res.text())
-          .then(csv => {
-            const lines = csv.split('\n').filter(l => l.trim());
-            console.log('Conteúdo bruto do CSV:', csv);
-            placarData = [];
-            placarFaixa.style.transition = 'opacity 0.6s';
-            // Sempre processa linhas 2 e 3
-            // Descobre quantas linhas exibir pelo valor da célula AI1
-            let numLinhas = 1;
-            if (lines.length > 0) {
-              const headerCols = lines[0].match(/("[^"]*"|[^,]+)/g) || [];
-              const ai1Index = headerCols.length - 1;
-              const ai1Value = headerCols[ai1Index] ? headerCols[ai1Index].replace(/^"|"$/g, '').trim() : '';
-              if (!isNaN(parseInt(ai1Value))) {
-                numLinhas = parseInt(ai1Value);
-              }
-            }
-            // Exibe apenas as linhas indicadas
-            for (let i = 1; i <= numLinhas && i < lines.length; i++) {
-              const cols = lines[i].match(/("[^"]*"|[^,]+)/g) || [];
-              if (cols[0] && cols[0].replace(/^"|"$/g, '').trim() !== '') {
-                placarData.push(parseLine(cols));
-              }
-            }
-            if (placarData.length > 0) {
-              showPlacar(0);
-              if (!window.placarAlternaInterval) {
-                window.placarAlternaInterval = setInterval(() => {
-                  currentLine = (currentLine + 1) % placarData.length;
-                  showPlacar(currentLine);
-                }, 7000);
-              }
-            } else {
-              placarFaixa.innerHTML = 'Dados insuficientes.';
-              console.warn('CSV não possui linhas suficientes para exibir dados.');
-            }
-          })
-          .catch((err) => {
-            placarFaixa.innerHTML = '<span style="color:#c00; font-size:1.2rem;">Erro ao carregar dados.</span>';
-            console.error('Erro ao buscar CSV:', err);
-            alert('Erro ao carregar os dados do placar. Veja o console para detalhes.');
-          });
-        // Gerar abas dinamicamente a partir das células A2 a A6 do CSV
-const abasUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS9MFvZCh0tVbBeZVVVEE7ufjMakoaL4shjAIQrC8YAUuwvtF8xyPPrc0jYTDWms0K1CVk05chIzOsT/pub?gid=311692731&single=true&output=csv';
-let destaqueData = [];
-let destaqueAtual = 0;
-let destaqueInterval = null;
-function exibeDestaque(idx) {
-  if (!destaqueData[idx]) return;
-  document.getElementById('destaque-img-src').src = destaqueData[idx].img;
-  document.getElementById('destaque-texto').textContent = destaqueData[idx].texto;
-  // Atualiza aba ativa
-  document.querySelectorAll('.aba').forEach((el, i) => {
-    el.classList.toggle('aba-ativa', i === idx);
-  });
-}
-fetch(abasUrl)
-  .then(res => res.text())
-  .then(csv => {
-    const linhas = csv.split('\n');
-    destaqueData = [];
-    for(let i=1; i<=5; i++) { // Linhas 2 a 6
-      if(linhas[i]) {
-        const cols = linhas[i].match(/("[^"]*"|[^,]+)/g) || [];
-        // A: nome da aba, B: imagem, C: texto
-        destaqueData.push({
-          aba: cols[0] ? cols[0].replace(/^"|"$/g, '').trim() : '',
-          img: cols[1] ? cols[1].replace(/^"|"$/g, '').trim() : '',
-          texto: cols[2] ? cols[2].replace(/^"|"$/g, '').trim() : ''
-        });
+      // Jogo 2
+      const jogo2Container = document.getElementById('jogo2-container');
+      jogo2Container.innerHTML = '';
+      const terceiraLinha = linhas[2].split(',');
+      if (terceiraLinha[1] && terceiraLinha[1].trim() !== "") {
+        const jogo2 = `
+          <div class='separador-vertical'></div>
+          <div class='jogo-resultado'>
+            <img class='logo-time' id='logo-time1-j2' src='' alt='Time 1'>
+            <span class='placar-time' id='placar-time1-j2'>0</span>
+            <span class='placar-separador'>:</span>
+            <span class='placar-time' id='placar-time2-j2'>0</span>
+            <img class='logo-time' id='logo-time2-j2' src='' alt='Time 2'>
+          </div>
+        `;
+        jogo2Container.insertAdjacentHTML('beforeend', jogo2);
+        document.getElementById('logo-time1-j2').src = terceiraLinha[6]; // G3
+        document.getElementById('logo-time2-j2').src = terceiraLinha[7]; // H3
+        document.getElementById('placar-time1-j2').textContent = terceiraLinha[2]; // C3
+        document.getElementById('placar-time2-j2').textContent = terceiraLinha[3]; // D3;
       }
-    }
-    // Monta abas
-    const abasContainer = document.getElementById('destaque-abas');
-    abasContainer.innerHTML = '';
-    destaqueData.forEach((item, idx) => {
-      if(item.aba) {
-        const div = document.createElement('div');
-        div.className = 'aba' + (idx === 0 ? ' aba-ativa' : '');
-        div.textContent = item.aba;
-        div.onclick = () => {
-          clearInterval(destaqueInterval);
-          exibeDestaque(idx);
-          destaqueAtual = idx;
-          // Reinicia alternância após 15s sem clique
-          setTimeout(() => {
-            if(!destaqueInterval) {
-              destaqueInterval = setInterval(() => {
-                destaqueAtual = (destaqueAtual + 1) % destaqueData.length;
-                exibeDestaque(destaqueAtual);
-              }, 7000);
-            }
-          }, 15000);
-          destaqueInterval = null;
-        };
-        abasContainer.appendChild(div);
+      // Jogo 3
+      const quartaLinha = linhas[3].split(',');
+      if (quartaLinha[1] && quartaLinha[1].trim() !== "") {
+        const jogo3 = `
+          <div class='separador-vertical'></div>
+          <div class='jogo-resultado'>
+            <img class='logo-time' id='logo-time1-j3' src='' alt='Time 1'>
+            <span class='placar-time' id='placar-time1-j3'>0</span>
+            <span class='placar-separador'>:</span>
+            <span class='placar-time' id='placar-time2-j3'>0</span>
+            <img class='logo-time' id='logo-time2-j3' src='' alt='Time 2'>
+          </div>
+        `;
+        jogo2Container.insertAdjacentHTML('beforeend', jogo3);
+        document.getElementById('logo-time1-j3').src = quartaLinha[6]; // G4
+        document.getElementById('logo-time2-j3').src = quartaLinha[7]; // H4
+        document.getElementById('placar-time1-j3').textContent = quartaLinha[2]; // C4
+        document.getElementById('placar-time2-j3').textContent = quartaLinha[3]; // D4;
+      }
+      // Jogo 4
+      const quintaLinha = linhas[4].split(',');
+      if (quintaLinha[1] && quintaLinha[1].trim() !== "") {
+        const jogo4 = `
+          <div class='separador-vertical'></div>
+          <div class='jogo-resultado'>
+            <img class='logo-time' id='logo-time1-j4' src='' alt='Time 1'>
+            <span class='placar-time' id='placar-time1-j4'>0</span>
+            <span class='placar-separador'>:</span>
+            <span class='placar-time' id='placar-time2-j4'>0</span>
+            <img class='logo-time' id='logo-time2-j4' src='' alt='Time 2'>
+          </div>
+        `;
+        jogo2Container.insertAdjacentHTML('beforeend', jogo4);
+        document.getElementById('logo-time1-j4').src = quintaLinha[6]; // G5
+        document.getElementById('logo-time2-j4').src = quintaLinha[7]; // H5
+        document.getElementById('placar-time1-j4').textContent = quintaLinha[2]; // C5
+        document.getElementById('placar-time2-j4').textContent = quintaLinha[3]; // D5;
       }
     });
-    // Exibe primeiro destaque
-    exibeDestaque(0);
-    // Alternância automática
-    destaqueInterval = setInterval(() => {
-      destaqueAtual = (destaqueAtual + 1) % destaqueData.length;
-      exibeDestaque(destaqueAtual);
-    }, 7000);
-  })
-  .catch(() => {
-    document.getElementById('destaque-abas').innerHTML = '<div class="aba">Erro ao carregar abas</div>';
-    document.getElementById('destaque-img-src').src = '';
-    document.getElementById('destaque-texto').textContent = 'Erro ao carregar destaques.';
+  </script>
+  <script>
+const urlCSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS9MFvZCh0tVbBeZVVVEE7ufjMakoaL4shjAIQrC8YAUuwvtF8xyPPrc0jYTDWms0K1CVk05chIzOsT/pub?gid=988084325&single=true&output=csv';
+let dadosCompeticoes = [];
+let indiceCompeticao = 0;
+
+function renderCompeticao(competicao) {
+  document.getElementById('logo-competicao').src = competicao.logo;
+  // Jogo 1
+  document.getElementById('logo-time1').src = competicao.jogos[0].logo1;
+  document.getElementById('logo-time2').src = competicao.jogos[0].logo2;
+  document.getElementById('placar-time1').textContent = competicao.jogos[0].placar1;
+  document.getElementById('placar-time2').textContent = competicao.jogos[0].placar2;
+
+  // Limpa jogos extras
+  const jogo2Container = document.getElementById('jogo2-container');
+  jogo2Container.innerHTML = '';
+  // Adiciona jogos extras
+  for (let i = 1; i < competicao.jogos.length; i++) {
+    const jogo = competicao.jogos[i];
+    if (!jogo.mostrar) continue;
+    const bloco = `
+      <div class='separador-vertical'></div>
+      <div class='jogo-resultado'>
+        <img class='logo-time' src='${jogo.logo1}' alt='Time 1'>
+        <span class='placar-time'>${jogo.placar1}</span>
+        <span class='placar-separador'>:</span>
+        <span class='placar-time'>${jogo.placar2}</span>
+        <img class='logo-time' src='${jogo.logo2}' alt='Time 2'>
+      </div>
+    `;
+    jogo2Container.insertAdjacentHTML('beforeend', bloco);
+  }
+}
+
+function prepararDados(csv) {
+  const linhas = csv.split('\n').map(l => l.split(','));
+  let numCompeticoes = 10;
+  if (linhas[0][15] && !isNaN(parseInt(linhas[0][15]))) {
+    numCompeticoes = parseInt(linhas[0][15]); // P1 é coluna 15 (índice 15)
+  }
+  dadosCompeticoes = [];
+  for (let i = 0; i < numCompeticoes; i++) {
+    const base = i * 6;
+    const logo = linhas[base][6];
+    const jogos = [
+      { logo1: linhas[base+1][6], logo2: linhas[base+1][7], placar1: linhas[base+1][2], placar2: linhas[base+1][3], mostrar: true },
+      { logo1: linhas[base+2][6], logo2: linhas[base+2][7], placar1: linhas[base+2][2], placar2: linhas[base+2][3], mostrar: linhas[base+2][1].trim() !== '' },
+      { logo1: linhas[base+3][6], logo2: linhas[base+3][7], placar1: linhas[base+3][2], placar2: linhas[base+3][3], mostrar: linhas[base+3][1].trim() !== '' },
+      { logo1: linhas[base+4][6], logo2: linhas[base+4][7], placar1: linhas[base+4][2], placar2: linhas[base+4][3], mostrar: linhas[base+4][1].trim() !== '' }
+    ];
+    dadosCompeticoes.push({ logo, jogos });
+  }
+}
+
+function iniciarTroca() {
+  renderCompeticao(dadosCompeticoes[indiceCompeticao]);
+  setInterval(() => {
+    indiceCompeticao = (indiceCompeticao + 1) % dadosCompeticoes.length;
+    renderCompeticao(dadosCompeticoes[indiceCompeticao]);
+  }, 7000);
+}
+
+fetch(urlCSV)
+  .then(response => response.text())
+  .then(csv => {
+    prepararDados(csv);
+    iniciarTroca();
   });
-    </script>
-    <main>
-    </main>
+  </script>
+  <script>
+fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vQKUCDbK0LpOTjPdCx_IV-YpT6MGeFL4QlHSNp7GuXBVCBR4jdcaowXIbswM9lDr20KzzJbBMxud6Qf/pub?gid=0&single=true&output=csv')
+  .then(response => response.text())
+  .then(csv => {
+    const linhas = csv.split('\n');
+    document.getElementById('logo-campeonato').src = linhas[0].split(',')[11]; // L1
+    document.getElementById('titulo-campeonato').textContent = linhas[0].split(',')[4]; // E1
+    document.getElementById('th-info-campeonato').textContent = linhas[3].split(',')[4]; // E4
+    // Preenche a tabela de classificação
+    const corpo = document.getElementById('corpo-classificacao');
+    corpo.innerHTML = '';
+    for (let i = 4; i < 11; i++) { // linhas 5 a 11
+      const linha = linhas[i].split(',');
+      const pos = linha[2]; // C
+      const logo = linha[11] || linha[12]; // L
+      const clube = linha[4]; // D
+      const pts = linha[5]; // F
+      const sg = linha[10]; // K
+      let corPos = '';
+      if (i === 4 || i === 5 || i === 6) corPos = "color:#00e6c0;font-weight:bold;";
+      corpo.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td style='text-align:center;padding:8px 4px;${corPos}'>${pos}</td>
+          <td style='text-align:center;padding:8px 4px;'><img src='${logo}' alt='Logo' style='height:32px;width:32px;object-fit:contain;border-radius:6px;'></td>
+          <td style='text-align:left;padding:8px 8px;'>${clube}</td>
+          <td style='text-align:center;padding:8px 4px;'>${pts}</td>
+          <td style='text-align:center;padding:8px 4px;'>${sg}</td>
+        </tr>
+      `);
+    }
+    // Preenche 3 resultados dos jogos 1, 2 e 3
+    const corpoResultados = document.getElementById('corpo-resultados');
+    corpoResultados.innerHTML = '';
+    // Pega os índices das linhas dos jogos nas células W14, W15, W16
+    const idxJogo1 = parseInt(linhas[13].split(',')[22]); // W14
+    const idxJogo2 = parseInt(linhas[14].split(',')[22]); // W15
+    const idxJogo3 = parseInt(linhas[15].split(',')[22]); // W16
+    [idxJogo1, idxJogo2, idxJogo3].forEach(idx => {
+      if (!isNaN(idx) && linhas[idx]) {
+        const linha = linhas[idx].split(',');
+        const logo1 = linha[11] ? linha[11].trim() : '';
+        const nome1 = linha[4] ? linha[4].trim() : '';
+        const res1 = linha[5] ? linha[5].trim() : '';
+        const res2 = linha[6] ? linha[6].trim() : '';
+        const nome2 = linha[7] ? linha[7].trim() : '';
+        const logo2 = linha[12] ? linha[12].trim() : '';
+        corpoResultados.insertAdjacentHTML('beforeend', `
+          <tr style='background:#000;'>
+            <td style='padding:8px 4px;'><img src='${logo1}' alt='Logo Time 1' style='height:32px;width:32px;object-fit:contain;border-radius:6px;'></td>
+            <td style='color:#fff;font-weight:bold;padding:8px 8px;'>${nome1}</td>
+            <td style='color:#fff;font-size:1.2em;font-weight:bold;padding:8px 4px;'>${res1}</td>
+            <td style='color:#fff;font-size:1.2em;font-weight:bold;padding:8px 4px;'>:</td>
+            <td style='color:#fff;font-size:1.2em;font-weight:bold;padding:8px 4px;'>${res2}</td>
+            <td style='color:#fff;font-weight:bold;padding:8px 8px;'>${nome2}</td>
+            <td style='padding:8px 4px;'><img src='${logo2}' alt='Logo Time 2' style='height:32px;width:32px;object-fit:contain;border-radius:6px;'></td>
+          </tr>
+        `);
+      }
+    });
+  });
+  </script>
+  <script>
+fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vS9MFvZCh0tVbBeZVVVEE7ufjMakoaL4shjAIQrC8YAUuwvtF8xyPPrc0jYTDWms0K1CVk05chIzOsT/pub?gid=1891517616&single=true&output=csv')
+  .then(response => response.text())
+  .then(csv => {
+    const linhas = csv.split('\n');
+    const segundaLinha = linhas[1].split(',');
+    const urlImg = segundaLinha[2]; // C2
+    if (urlImg && urlImg.trim() !== "") {
+      const img = document.getElementById('img-publicidade1');
+      img.src = urlImg;
+    }
+  });
+  </script>
+  <script>
+fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vS9MFvZCh0tVbBeZVVVEE7ufjMakoaL4shjAIQrC8YAUuwvtF8xyPPrc0jYTDWms0K1CVk05chIzOsT/pub?gid=311692731&single=true&output=csv')
+  .then(response => response.text())
+  .then(csv => {
+    const linhas = csv.split('\n');
+    const nomesAbas = [
+      linhas[1].split(',')[0], // A2
+      linhas[2].split(',')[0], // A3
+      linhas[3].split(',')[0], // A4
+      linhas[4].split(',')[0], // A5
+      linhas[5].split(',')[0]  // A6
+    ];
+    document.getElementById('aba1').textContent = nomesAbas[0];
+    document.getElementById('aba2').textContent = nomesAbas[1];
+    document.getElementById('aba3').textContent = nomesAbas[2];
+    document.getElementById('aba4').textContent = nomesAbas[3];
+    document.getElementById('aba5').textContent = nomesAbas[4];
+
+    // Imagens dos destaques
+    const imagensDestaque = [
+      linhas[1].split(',')[1], // B2
+      linhas[2].split(',')[1], // B3
+      linhas[3].split(',')[1], // B4
+      linhas[4].split(',')[1], // B5
+      linhas[5].split(',')[1]  // B6
+    ];
+    // Textos dos destaques
+    const textosDestaque = [
+      linhas[1].split(',')[2], // C2
+      linhas[2].split(',')[2], // C3
+      linhas[3].split(',')[2], // C4
+      linhas[4].split(',')[2], // C5
+      linhas[5].split(',')[2]  // C6
+    ];
+    let abaAtual = 0;
+    let intervalo;
+    function trocarAba(idx) {
+      abaAtual = idx;
+      document.getElementById('img-destaque').src = imagensDestaque[idx];
+      document.getElementById('texto-destaque').textContent = textosDestaque[idx];
+      document.querySelectorAll('.aba').forEach(el => el.classList.remove('aba-ativa'));
+      document.getElementById('aba'+(idx+1)).classList.add('aba-ativa');
+    }
+    function iniciarLoopAbas() {
+      intervalo = setInterval(() => {
+        abaAtual = (abaAtual + 1) % 5;
+        trocarAba(abaAtual);
+      }, 7000);
+    }
+    trocarAba(0);
+    iniciarLoopAbas();
+    for (let i = 1; i <= 5; i++) {
+      document.getElementById('aba'+i).addEventListener('click', function() {
+        clearInterval(intervalo);
+        trocarAba(i-1);
+        iniciarLoopAbas();
+      });
+    }
+  });
+  </script>
 </body>
 </html>

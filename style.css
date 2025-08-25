@@ -1,8 +1,158 @@
+/* Reset de estilos para um início limpo */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Estilos gerais */
+body {
+    font-family: 'Ubuntu', Arial, sans-serif;
+    background: #f5f5f5;
+    color: #222;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+h1, h2, h3 {
+    font-family: 'Ubuntu', Arial, sans-serif;
+}
+
+.container {
+    width: 65vw;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 2vw;
+}
+
+/* Estilos do cabeçalho */
+.header {
+  width: 100%;
+  background: #000;
+  color: #FFD600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+}
+
+.logo {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.logo img {
+  height: 57.6px;
+  max-width: 144px;
+}
+
+.nav {
+  flex: 2;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.nav a {
+  color: #FFD600;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1.1rem;
+  transition: color 0.2s;
+}
+
+.nav a:hover {
+  color: #fff;
+}
+
+.search-area {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-box {
+  padding: 0.5rem;
+  border-radius: 0.3rem;
+  border: 1px solid #ccc;
+}
+
+.search-btn {
+  background: #FFD600;
+  border: none;
+  border-radius: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+/* Estilos dos botões */
+.subscribe-btn {
+    background: #e0bc1b;
+    border: 1px solid #fff;
+    color: #fff;
+    border-radius: 6px;
+    padding: 0 18px;
+    height: 40px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.subscribe-btn:hover {
+    background: #FFD600;
+    color: #111;
+}
+
+/* Estilos principais */
+main {
+    padding: 40px;
+}
+
+/* Estilos do rodapé */
+footer {
+    width: 100%;
+    background: #111;
+    color: #FFD600;
+    padding: 32px 0;
+    text-align: left;
+    font-family: Ubuntu, sans-serif;
+    font-size: 1.1rem;
+    margin-top: 32px;
+    line-height: 1.3;
+}
+
+footer > div {
+    max-width: 950px;
+    margin-left: 1cm;
+}
+
+footer p {
+    margin: 8px 0;
+    padding-left: 0;
+}
+
+/* Estilos específicos */
 .destaque-abas {
     display: flex;
-    width: 950px;
-    margin: 0 auto 0 auto;
+    width: 100%;
+    margin: 0 auto;
 }
+
 .aba {
     flex: 1;
     background: #000;
@@ -11,37 +161,41 @@
     font-weight: 700;
     font-size: 1.25rem;
     text-align: center;
-    padding: 16px 0 12px 0;
+    padding: 2vw 0 1.5vw 0;
     cursor: pointer;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    border-right: 3px solid #fff;
+    border-top-left-radius: 0.8vw;
+    border-top-right-radius: 0.8vw;
+    border-right: 0.3vw solid #fff;
     transition: background 0.2s, color 0.2s;
 }
+
 .aba:last-child {
     border-right: none;
 }
+
 .aba-ativa {
     background: #FFD600;
     color: #111;
 }
+
 .destaque-conteudo {
     display: flex;
     align-items: flex-start;
-    padding: 24px 40px 32px 40px;
+    padding: 2vw 4vw;
+    gap: 2vw;
 }
 
 .destaque-quadro {
-    display: flex;
-    align-items: center;
-    background: #f5d77b;
-    border-radius: 0 0 20px 20px;
-    padding: 32px 40px 22px 40px;
-        width: 950px;
-        max-width: 950px;
-    margin: 0 auto 0 auto;
-    box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  background: #f5d77b;
+  border-radius: 0 0 2vw 2vw;
+  padding: 3vw 2vw 2vw 4vw;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
 }
+
 .destaque-img img {
     width: 420px;
     height: 250px;
@@ -52,136 +206,150 @@
     left: -1cm;
     top: 0;
 }
+
 .destaque-texto {
     font-family: 'Ubuntu', Arial, sans-serif;
     font-size: 1.6rem;
     color: #222;
-    margin-left: 1cm;
+    margin-left: 0;
     line-height: 1.2;
-    letter-spacing: 1px;
-    max-width: calc(950px - 420px - 40px - 40px - 1cm);
-    margin-right: 3cm;
-    position: relative;
-    left: -1cm;
-    top: 0;
-    text-align: left;
-    border: 2px solid #e0bc1b;
-    border-radius: 12px;
-    background: #fff8e1;
-    box-sizing: border-box;
+    word-break: break-word;
+    white-space: normal;
+    width: calc(950px - 420px - 40px - 40px - 1cm);
+    min-height: calc(250px - 1cm);
+    max-height: calc(250px - 1cm);
     align-self: flex-start;
-}
-body {
-    font-family: 'Ubuntu', Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #f5f5f5;
-    color: #222;
-}
-.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #000;
-    padding: 10px 40px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-.logo {
-    display: flex;
-    align-items: center;
-    margin-left: 220px;
-}
-h1, h2, h3 {
-    font-family: 'Ubuntu', Arial, sans-serif;
+    overflow-wrap: break-word;
 }
 
-h2 {
-    font-size: 70px;
-    color: #222;
-    font-weight: 700;
-    letter-spacing: 2px;
-    font-family: 'Ubuntu', Arial, sans-serif;
-    margin-top: 56px;
-    margin-left: 9.5cm;
-    margin-bottom: 0.1em;
+/* Publicidade */
+.publicidade {
+  width: 100%;
+  height: 14.9vw;
+  margin: 0 auto;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-.nav {
-    display: flex;
-    gap: 24px;
-    margin-left: 0px;
+
+.publicidade1 {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
 }
-.nav a {
-    color: #ffffff;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 1rem;
-    transition: color 0.2s;
+
+#img-publicidade1 {
+  max-width: 500px;
+  width: 100%;
+  height: 5vh;
+  object-fit: contain;
+  display: block;
+  border-radius: 8px;
 }
-.nav a:hover {
-    color: #e0bc1b;
+
+/* Destaques */
+.destaques-titulo {
+  font-size: 4vw;
+  font-weight: bold;
+  margin-bottom: 1vw;
+  text-align: left;
+  width: 100%;
+  padding-left: 0;
+  margin-left: 0;
 }
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-right: 6cm;
-}
-.search-btn {
-    background: #e0bc1b;
-    border: 1px solid #fff;
-    color: #fff;
-    border-radius: 6px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.search-btn:hover {
-    background: #464545;
-}
-.subscribe-btn {
-    background: transparent;
-    border: 1px solid #fff;
-    color: #fff;
-    border-radius: 6px;
-    padding: 0 18px;
-    height: 40px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-}
-.subscribe-btn:hover {
-    background: #FFD600;
-    color: #111;
-}
-.search-box {
-    height: 36px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    padding: 0 12px;
-    font-size: 1rem;
-    margin-left: 8px;
-    outline: none;
-    transition: border-color 0.2s;
-}
-.search-box:focus {
-    border-color: #FFD600;
-}
+
+/* Sub-header */
 .sub-header {
-    width: 100%;
-    height: 90px;
+    width: 100vw;
+    min-width: 0;
+    max-width: 100vw;
+    height: 9vh;
     background: #c0c0c0;
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    font-size: 1.2rem;
-    color: #e5ff00;
-    margin-right: 5cm;
+    font-size: 1vw;
+    color: #5a0000;
+    margin: 0;
+    box-sizing: border-box;
+    padding: 0 2vw;
 }
-main {
-    padding: 40px;
+
+.resultados-faixa {
+  width: 100vw;
+  height: 10vh;
+  background: #c0c0c0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+
+.logo-competicao {
+  height: 7vh;
+  max-width: 120px;
+  margin-right: 2vw;
+}
+
+.separador-vertical {
+  width: 2px;
+  height: 6vh;
+  background: #888;
+  margin: 0 2vw;
+  border-radius: 1px;
+}
+
+.jogo-resultado {
+  display: flex;
+  align-items: center;
+  gap: 0.9vw;
+}
+.logo-time {
+  height: 5.4vh;
+  max-width: 5.4vh;
+  object-fit: contain;
+  border-radius: 0.45vh;
+}
+.placar-time {
+  font-size: 1.8rem;
+}
+.placar-separador {
+  font-size: 1.8rem;
+  margin: 0 0.3vw;
+}
+
+@media (max-width: 600px) {
+  .sub-header {
+    height: 7vw;
+    font-size: 2vw;
+    padding: 0 1vw;
+  }
+}
+
+@media (max-width: 700px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+  }
+  .logo, .search-area {
+    justify-content: center;
+    margin-bottom: 0.5rem;
+  }
+  .nav {
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .resultados {
+    padding: 1rem;
+  }
+  .resultado-item {
+    font-size: 1rem;
+    padding: 0.7rem;
+  }
 }
