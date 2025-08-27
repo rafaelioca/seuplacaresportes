@@ -1,19 +1,519 @@
+</script>
+<script>
+
+  // Carregar nomes das abas de DESTAQUES!A2:A6
+  fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetIdSite}/values/DESTAQUES!A2:A6?key=${apiKey}`)
+    .then(response => response.json())
+    .then(data => {
+      const abas = document.querySelector('.destaque-abas');
+      abas.innerHTML = '';
+      if (data.values && Array.isArray(data.values)) {
+        data.values.forEach((linha, idx) => {
+          const nome = linha[0] || `Aba ${idx+1}`;
+          const btn = document.createElement('button');
+          btn.className = 'aba';
+          btn.textContent = nome;
+          btn.style.flex = '1';
+          btn.style.padding = '16px 0';
+          btn.style.fontSize = '1.1em';
+          btn.style.border = 'none';
+          btn.style.borderRadius = '8px';
+          btn.style.fontWeight = 'bold';
+          btn.style.cursor = 'pointer';
+          btn.style.transition = 'background 0.2s, color 0.2s';
+          abas.appendChild(btn);
+        });
+        // Alternância visual das abas de destaque
+        abas.querySelectorAll('.aba').forEach((btn, idx, arr) => {
+          btn.addEventListener('click', function() {
+            arr.forEach(b => b.classList.remove('ativa'));
+            btn.classList.add('ativa');
+          });
+        });
+        // Inicializa a primeira aba como ativa
+        if (abas.querySelector('.aba')) {
+          abas.querySelector('.aba').classList.add('ativa');
+        }
+      }
+    });
+
+  // Carregar imagem da Publicidade 1 da célula PUBLICIDADE!C2
+  fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetIdSite}/values/PUBLICIDADE!C2?key=${apiKey}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.values && data.values[0] && data.values[0][0]) {
+        const img = document.createElement('img');
+        img.src = data.values[0][0];
+        img.alt = 'Publicidade 1';
+        img.style.maxWidth = '98vw';
+        img.style.height = 'auto';
+        img.style.borderRadius = '12px';
+        img.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)';
+        document.getElementById('publicidade-1').appendChild(img);
+      }
+    });
+
+  // Faixa de resultados
+  function renderCompeticao(logoCell, jogosRange) {
+    const barra = document.getElementById('resultados-bar');
+    barra.style.opacity = '0';
+    setTimeout(function() {
+      barra.innerHTML = '<img class="logo-competicao" id="logo-competicao" src="" alt="Logo Competição"><div class="separador-vertical"></div>';
+      // Carrega logo
+      fetch('https://sheets.googleapis.com/v4/spreadsheets/' + spreadsheetIdSite + '/values/' + logoCell + '?key=' + apiKey)
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+          if (data.values && data.values[0] && data.values[0][0]) {
+            document.getElementById('logo-competicao').src = data.values[0][0];
+          } else {
+            document.getElementById('logo-competicao').alt = 'Logo não encontrada';
+          }
+        })
+        .catch(function() {
+          document.getElementById('logo-competicao').alt = 'Erro ao carregar logo';
+        });
+      // Carrega jogos
+      fetch('https://sheets.googleapis.com/v4/spreadsheets/' + spreadsheetIdSite + '/values/' + jogosRange + '?key=' + apiKey)
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+          var algumJogo = false;
+          if (data.values && Array.isArray(data.values)) {
+            data.values.forEach(function(linha) {
+              if (linha[0] && linha[0].trim() !== "") {
+                algumJogo = true;
+                var htmlJogo = '<div class="jogo-resultado">' +
+                  '<img class="logo-time" src="' + linha[5] + '" alt="Time 1">' +
+                  '<span class="placar-time">' + linha[1] + '</span>' +
+                  '<span class="placar-separador">:</span>' +
+                  '<span class="placar-time">' + linha[2] + '</span>' +
+                  '<img class="logo-time" src="' + linha[6] + '" alt="Time 2">' +
+                  '</div>' +
+                  '<div class="separador-vertical"></div>';
+                barra.insertAdjacentHTML('beforeend', htmlJogo);
+              }
+            });
+          }
+          if (!algumJogo) {
+            barra.insertAdjacentHTML('beforeend', '<span style="color:#c00;font-weight:bold;">Nenhum resultado encontrado na planilha.</span>');
+          }
+          setTimeout(function() { barra.style.opacity = '1'; }, 100);
+        })
+        .catch(function() {
+          barra.insertAdjacentHTML('beforeend', '<span style="color:#c00;font-weight:bold;">Erro ao carregar resultados da planilha.</span>');
+          setTimeout(function() { barra.style.opacity = '1'; }, 100);
+        });
+    }, 300);
+  }
+
+  // Configuração dos campeonatos
+  function gerarCampeonatos(qtd) {
+    var comps = [];
+    for (var i = 0; i < qtd; i++) {
+      var baseLogo = 1 + i * 6;
+      var baseJogo = 2 + i * 6;
+      comps.push({
+        logo: 'JOGOS EXIBIDOS!G' + baseLogo,
+        jogos: 'JOGOS EXIBIDOS!B' + baseJogo + ':H' + (baseJogo+3)
+      });
+    }
+    return comps;
+  }
+
+  var campeonatos = [];
+  var atual = 0;
+
+  // Busca valor de P1 e inicializa alternância
+  fetch('https://sheets.googleapis.com/v4/spreadsheets/' + spreadsheetIdSite + '/values/JOGOS EXIBIDOS!P1?key=' + apiKey)
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+      var qtd = 1;
+      if (data.values && data.values[0] && !isNaN(parseInt(data.values[0][0]))) {
+        qtd = Math.max(1, Math.min(10, parseInt(data.values[0][0])));
+      }
+      campeonatos = gerarCampeonatos(qtd);
+      function alternarCompeticao() {
+        renderCompeticao(campeonatos[atual].logo, campeonatos[atual].jogos);
+        atual = (atual + 1) % campeonatos.length;
+      }
+      alternarCompeticao();
+      setInterval(alternarCompeticao, 7000);
+    });
+</script>
+<script>
+
+  // Carregar nomes das abas de DESTAQUES!A2:A6
+  fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetIdSite}/values/DESTAQUES!A2:A6?key=${apiKey}`)
+    .then(response => response.json())
+    .then(data => {
+      const abas = document.querySelector('.destaque-abas');
+      abas.innerHTML = '';
+      if (data.values && Array.isArray(data.values)) {
+        data.values.forEach((linha, idx) => {
+          const nome = linha[0] || `Aba ${idx+1}`;
+          const btn = document.createElement('button');
+          btn.className = 'aba';
+          btn.textContent = nome;
+          btn.style.flex = '1';
+          btn.style.padding = '16px 0';
+          btn.style.fontSize = '1.1em';
+          btn.style.border = 'none';
+          btn.style.borderRadius = '8px';
+          btn.style.fontWeight = 'bold';
+          btn.style.cursor = 'pointer';
+          btn.style.transition = 'background 0.2s, color 0.2s';
+          abas.appendChild(btn);
+        });
+        // Alternância visual das abas de destaque
+        abas.querySelectorAll('.aba').forEach((btn, idx, arr) => {
+          btn.addEventListener('click', function() {
+            arr.forEach(b => b.classList.remove('ativa'));
+            btn.classList.add('ativa');
+          });
+        });
+        // Inicializa a primeira aba como ativa
+        if (abas.querySelector('.aba')) {
+          abas.querySelector('.aba').classList.add('ativa');
+        }
+      }
+    });
+
+  // Carregar imagem da Publicidade 1 da célula PUBLICIDADE!C2
+  fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetIdSite}/values/PUBLICIDADE!C2?key=${apiKey}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.values && data.values[0] && data.values[0][0]) {
+        const img = document.createElement('img');
+        img.src = data.values[0][0];
+        img.alt = 'Publicidade 1';
+        img.style.maxWidth = '98vw';
+        img.style.height = 'auto';
+        img.style.borderRadius = '12px';
+        img.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)';
+        document.getElementById('publicidade-1').appendChild(img);
+      }
+    });
+
+  // Faixa de resultados
+  function renderCompeticao(logoCell, jogosRange) {
+    const barra = document.getElementById('resultados-bar');
+    barra.style.opacity = '0';
+    setTimeout(() => {
+      barra.innerHTML = `<img class="logo-competicao" id="logo-competicao" src="" alt="Logo Competição"><div class="separador-vertical"></div>`;
+      // Carrega logo
+      fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetIdSite}/values/${logoCell}?key=${apiKey}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.values && data.values[0] && data.values[0][0]) {
+            document.getElementById('logo-competicao').src = data.values[0][0];
+          } else {
+            document.getElementById('logo-competicao').alt = 'Logo não encontrada';
+          }
+        })
+        .catch(() => {
+          document.getElementById('logo-competicao').alt = 'Erro ao carregar logo';
+        });
+      // Carrega jogos
+      fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetIdSite}/values/${jogosRange}?key=${apiKey}`)
+        .then(response => response.json())
+        .then(data => {
+          let algumJogo = false;
+          if (data.values && Array.isArray(data.values)) {
+            data.values.forEach((linha) => {
+              if (linha[0] && linha[0].trim() !== "") {
+                algumJogo = true;
+                const htmlJogo = `
+                  <div class="jogo-resultado">
+                    <img class="logo-time" src="${linha[5]}" alt="Time 1">
+                    <span class="placar-time">${linha[1]}</span>
+                    <span class="placar-separador">:</span>
+                    <span class="placar-time">${linha[2]}</span>
+                    <img class="logo-time" src="${linha[6]}" alt="Time 2">
+                  </div>
+                  <div class="separador-vertical"></div>
+                `;
+                barra.insertAdjacentHTML('beforeend', htmlJogo);
+              }
+            });
+          }
+          if (!algumJogo) {
+            barra.insertAdjacentHTML('beforeend', '<span style="color:#c00;font-weight:bold;">Nenhum resultado encontrado na planilha.</span>');
+          }
+          setTimeout(() => { barra.style.opacity = '1'; }, 100);
+        })
+        .catch(() => {
+          barra.insertAdjacentHTML('beforeend', '<span style="color:#c00;font-weight:bold;">Erro ao carregar resultados da planilha.</span>');
+          setTimeout(() => { barra.style.opacity = '1'; }, 100);
+        });
+    }, 300);
+  }
+
+  // Configuração dos campeonatos
+  function gerarCampeonatos(qtd) {
+    const comps = [];
+    for (let i = 0; i < qtd; i++) {
+      const baseLogo = 1 + i * 6;
+      const baseJogo = 2 + i * 6;
+      comps.push({
+        logo: `JOGOS EXIBIDOS!G${baseLogo}`,
+        jogos: `JOGOS EXIBIDOS!B${baseJogo}:H${baseJogo+3}`
+      });
+    }
+    return comps;
+  }
+
+  let campeonatos = [];
+  let atual = 0;
+
+  // Busca valor de P1 e inicializa alternância
+  fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetIdSite}/values/JOGOS EXIBIDOS!P1?key=${apiKey}`)
+    .then(response => response.json())
+    .then(data => {
+      let qtd = 1;
+      if (data.values && data.values[0] && !isNaN(parseInt(data.values[0][0]))) {
+        qtd = Math.max(1, Math.min(10, parseInt(data.values[0][0])));
+      }
+      campeonatos = gerarCampeonatos(qtd);
+      function alternarCompeticao() {
+        renderCompeticao(campeonatos[atual].logo, campeonatos[atual].jogos);
+        atual = (atual + 1) % campeonatos.length;
+      }
+      alternarCompeticao();
+      setInterval(alternarCompeticao, 7000);
+    });
+</script>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Seu Site</title>
+  <title>Seu Placar Esportes</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/9zfRszqM/SEU-PLACAR-ESPORTIVO-Logo.png">
   <style>
+    @media (max-width: 600px) {
+      .quadro-destaque-amarelo {
+        flex-direction: column !important;
+        padding: 16px 4vw;
+        width: 98vw;
+        max-width: 98vw;
+      }
+      .quadro-destaque-amarelo img {
+        width: 90vw !important;
+        height: 180px !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        border-radius: 10px !important;
+      }
+      .quadro-destaque-amarelo span {
+        font-size: 1.2em !important;
+        margin-top: 12px;
+        align-self: flex-start;
+      }
+    }
+    .aba {
+      flex: 1;
+      padding: 16px 0;
+      font-size: 1.1em;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      background: #111;
+      color: #FFD600;
+    }
+    .aba.ativa {
+      background: #FFD600;
+      color: #111;
+    }
+    .resultados-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e0e0e0;
+  padding: 10px 0;
+  width: 100vw;
+  min-width: 100vw;
+  max-width: 100vw;
+  left: 0;
+  right: 0;
+  position: relative;
+  overflow-x: auto;
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
+  box-sizing: border-box;
+  transition: opacity 0.5s;
+    }
+    .jogo-resultado {
+      display: flex;
+      align-items: center;
+      margin: 0 10px;
+      background: transparent;
+    }
+    .separador-vertical {
+      width: 2px;
+      height: 40px;
+      background: #bdbdbd;
+      margin: 0 10px;
+    }
+    .logo-competicao {
+      height: 60px;
+      margin-right: 20px;
+    }
+    .logo-time {
+      height: 32px;
+      width: 32px;
+      object-fit: contain;
+      margin: 0 5px;
+      background: transparent;
+    }
+    .placar-time {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin: 0 5px;
+    }
+    .placar-separador {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin: 0 5px;
+    }
+    @media (max-width: 600px) {
+      .resultados-bar {
+        flex-wrap: nowrap;
+        padding: 5px 0;
+      }
+      .logo-competicao {
+        height: 40px;
+        margin-right: 10px;
+      }
+      .logo-time {
+        height: 22px;
+        width: 22px;
+        margin: 0 2px;
+      }
+      .separador-vertical {
+        height: 22px;
+        margin: 0 4px;
+      }
+      .placar-time, .placar-separador {
+        font-size: 1em;
+        margin: 0 2px;
+      }
+    }
+  /* Mantém apenas o bloco original dos resultados abaixo */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f5f5f5;
+    }
+    .header {
+      width: 100%;
+      background: #111;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 70px;
+      box-sizing: border-box;
+    }
+    .header-logo {
+      height: 48px;
+      width: auto;
+      margin-right: 24px;
+    }
+    .header-menu {
+      display: flex;
+      gap: 32px;
+      flex: 1;
+      justify-content: center;
+      align-items: center;
+    }
+    .header-menu a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.1em;
+      transition: color 0.2s;
+    }
+    .header-menu a:hover {
+      color: #00e6c0;
+    }
+    .header-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+      .quadro-destaque-amarelo {
+        width: 70vw;
+        max-width: 70vw;
+        margin: 0 auto 24px auto;
+        background: #FFFDE7;
+        border: 3px solid #FFD600;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 32px 24px;
+  min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #222;
+        position: relative;
+        top: -8px;
+        z-index: 2;
+      }
+    .header-search input {
+      padding: 7px 12px;
+      border-radius: 20px;
+      border: none;
+      font-size: 1em;
+      outline: none;
+    }
+    .search-btn {
+      background: #FFD600;
+      border: none;
+      border-radius: 50%;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .search-btn:hover {
+      background: #FFC400;
+    }
+    .search-btn svg {
+      display: block;
+    }
     .resultados-bar {
       display: flex;
       align-items: center;
       justify-content: center;
       background: #e0e0e0;
       padding: 10px 0;
-      width: 100%;
+      width: 100vw;
+      min-width: 100vw;
+      max-width: 100vw;
+      left: 0;
+      right: 0;
+      position: relative;
       overflow-x: auto;
+      margin-top: 0;
+      margin-left: 0;
+      margin-right: 0;
+      box-sizing: border-box;
+    }
+    main {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      box-sizing: border-box;
     }
     .jogo-resultado {
       display: flex;
@@ -72,505 +572,485 @@
       }
     }
     @media (max-width: 700px) {
-      .destaques {
-        width: 98% !important;
-        min-width: 0;
-        margin: 0 auto;
+      .destaque-abas {
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 98vw !important;
+        max-width: 98vw !important;
+        margin: 0 auto 8px auto !important;
+        display: flex !important;
+      }
+      .quadro-destaque-amarelo {
+        width: 98vw !important;
+        max-width: 98vw !important;
+        margin: 0 auto 16px auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+      .tabelas-copa-wrap {
+        flex-direction: column !important;
+        gap: 16px !important;
+        width: 98vw !important;
+        max-width: 98vw !important;
+        margin: 0 auto !important;
+        display: flex !important;
+      }
+      .tabelas-copa-wrap > div {
+        width: 98vw !important;
+        min-width: 0 !important;
+        max-width: 98vw !important;
+        margin: 0 auto !important;
+      }
+    }
+    @media (max-width: 480px) {
+      .copa-titulo {
+        font-size: 0.9em !important;
+        gap: 2px !important;
+        margin-left: 1vw !important;
+        margin-right: 1vw !important;
+        padding: 0 1vw !important;
+      }
+      .logo-copa {
+        height: 14px !important;
+        width: 14px !important;
+        margin-right: 2px !important;
+      }
+      .resultados-bar, .quadro-destaque-amarelo {
+        font-size: 0.9em !important;
+      }
+      .logo-competicao {
+        height: 18px !important;
+        margin-right: 4px !important;
+      }
+      .logo-time {
+        height: 12px !important;
+        width: 12px !important;
+      }
+      .placar-time, .placar-separador {
+        font-size: 0.8em !important;
+      }
+      .header {
+        font-size: 0.85em !important;
       }
       .destaque-abas {
-        width: 100% !important;
-        flex-direction: column;
-        gap: 8px;
+        font-size: 0.9em !important;
       }
-      .aba {
-        font-size: 1rem;
-        padding: 0.5rem 0;
-        border-radius: 8px;
+      .quadro-destaque-amarelo {
+        font-size: 0.9em !important;
       }
-      .destaque-quadro {
+      .header-menu a {
+        font-size: 0.9em !important;
+      }
+      .header-logo {
+        height: 18px !important;
+      }
+      .header-search input {
+        font-size: 0.8em !important;
+      }
+      .tabelas-copa-wrap {
+        flex-direction: column !important;
+        gap: 16px !important;
+      }
+      .tabelas-copa-wrap > div {
+        width: 98vw !important;
+        min-width: 0 !important;
+        max-width: 98vw !important;
+      }
+    }
+    .footer {
+      width: 100vw;
+      background: #111;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 0 16px 0;
+      box-sizing: border-box;
+      margin-top: 0;
+      border-top: 3px solid #FFD600;
+    }
+    .footer-content {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      max-width: 900px;
+      width: 90vw;
+      justify-content: flex-start;
+    }
+    .footer-logo {
+      height: 84px;
+      width: auto;
+      margin-right: 24px;
+      border-radius: 12px;
+      background: #222;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      padding: 4px;
+    }
+    .footer-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    @media (max-width: 700px) {
+      .footer-content {
         flex-direction: column;
         align-items: center;
-        height: auto !important;
-        gap: 16px;
-        padding: 12px 0;
+        gap: 12px;
+        width: 98vw;
       }
-      #img-destaque {
-        width: 90vw !important;
-        max-width: 98vw;
-        height: auto !important;
-        margin-bottom: 8px;
+      .footer-logo {
+        height: 54px;
+        margin-right: 0;
       }
-      #texto-destaque {
-        font-size: 1.1rem !important;
-        max-width: 98vw;
-        text-align: left;
+      .footer-info span {
+        font-size: 1em !important;
       }
-    }
-    .destaques {
-      margin: 20px 0;
-      text-align: center;
-    }
-    .destaques-titulo {
-      font-size: 3.5rem;
-      font-weight: bold;
-      margin-bottom: 0.5vw;
-      text-align: left;
-      width: 100%;
-      padding-left: 0;
-      margin-left: 0;
-    }
-    .destaque-abas {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 10px;
-    }
-    .aba {
-      flex: 1;
-      background: #000;
-      color: #FFD600;
-      font-family: 'Ubuntu', Arial, sans-serif;
-      font-weight: 700;
-      font-size: 1.25rem;
-      text-align: center;
-      padding: 0.8vw 0 0.6vw 0;
-      cursor: pointer;
-      border-top-left-radius: 0.8vw;
-      border-top-right-radius: 0.8vw;
-      border-right: 0.3vw solid #fff;
-      transition: background 0.2s, color 0.2s;
-    }
-    .aba:last-child {
-      border-right: none;
-    }
-    .aba-ativa {
-      background: #FFD600;
-      color: #111;
-    }
-    .destaque-quadro {
-      background: #FFF9C4;
-      border: 6px solid #FFD600;
-      border-radius: 0 0 2vw 2vw;
-      width: 100%;
-      height: 350px;
-      margin: 0 auto;
-      display: flex;
-      align-items: flex-start;
-      gap: 32px;
-    }
-    #img-destaque {
-      height: 300px;
-      width: 420px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px #ccc;
-      object-fit: fill;
-    }
-    #texto-destaque {
-      font-size: 2rem;
-      color: #222;
-      font-family: 'Ubuntu', Arial, sans-serif;
-      max-width: 60%;
-      text-align: left;
-    }
-    .classificacao-campeonato {
-      width: 40%;
-      max-width: 360px;
-      margin: 40px auto 0 auto;
-      padding: 12px 0;
-    }
-    .classificacao-campeonato h2 {
-      font-size: 2.2rem;
-      font-weight: bold;
-      margin: 0;
-    }
-    .tabela-classificacao {
-      width: 100%;
-      border-collapse: collapse;
-      background: #000;
-      border-radius: 12px;
-      overflow: hidden;
-      color: #fff;
-    }
-    .tabela-classificacao th, .tabela-classificacao td {
-      padding: 2px 1px;
-      text-align: center;
-      color: #fff;
-    }
-    .tabela-classificacao th {
-      background: #FFD600;
-      color: #000;
-    }
-    .tabela-classificacao tbody tr:nth-child(even) {
-      background: #111;
-    }
-    .tabela-classificacao tbody tr:nth-child(odd) {
-      background: #000;
     }
   </style>
 </head>
 <body>
   <header class="header">
-    <div class="logo">
-      <img src="https://i.postimg.cc/y3WDRrz9/LOGO-2.png" alt="Logo">
-    </div>
-    <nav class="nav">
+    <img src="https://i.postimg.cc/Y0zYJJnX/LOGO-2.png" alt="Logo" class="header-logo" id="logo-header">
+    <nav class="header-menu">
       <a href="#">Home</a>
-      <a href="#">Sobre</a>
-      <a href="#">Contato</a>
+      <a href="#">Campeonato</a>
+      <a href="#">Notícias</a>
     </nav>
-    <div class="search-area">
-      <input type="text" class="search-box" placeholder="Buscar...">
-      <button class="search-btn" title="Buscar">
-        <img src="https://cdn-icons-png.flaticon.com/32/622/622669.png" alt="Pesquisar" style="height:20px;">
+    <div class="header-search">
+      <input type="text" placeholder="Buscar..." id="campo-busca">
+      <button type="button" class="search-btn" aria-label="Buscar">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="10" cy="10" r="8" stroke="#111" stroke-width="2" fill="none"/>
+          <line x1="16" y1="16" x2="21" y2="21" stroke="#111" stroke-width="2"/>
+        </svg>
       </button>
     </div>
   </header>
-
-  <div class="resultados-bar">
-    <img id="logo-competicao" class="logo-competicao" src="" alt="Logo Competição">
-    <div class="jogo-resultado" id="jogo1">
-      <img class="logo-time" id="logo-time1" src="" alt="Time 1">
-      <span class="placar-time" id="placar-time1">0</span>
-      <span class="placar-separador">:</span>
-      <span class="placar-time" id="placar-time2">0</span>
-      <img class="logo-time" id="logo-time2" src="" alt="Time 2">
+  <main style="padding:0; margin:0;">
+    <div class="resultados-bar" id="resultados-bar">
+      <img class="logo-competicao" id="logo-competicao" src="" alt="Logo Competição">
+      <div class="separador-vertical"></div>
+      <!-- Aqui serão inseridos os resultados dos jogos depois -->
     </div>
-    <div id="jogo2-container" style="display: flex;"></div>
-  </div>
-
-  <div class="publicidade1" style="width:100%;display:flex;justify-content:center;margin:40px 0;">
-    <img id="img-publicidade1" src="" alt="Publicidade 1" style="width:80%;max-width:1300px;height:auto;display:block;border-radius:8px;object-fit:contain;">
-  </div>
-
-  <div class="destaques" style="width:55%;margin:0 auto;">
-    <h2 class="destaques-titulo" style="width:100%;text-align:left;">Destaques</h2>
-    <div class="destaque-abas" style="width:100%;margin:0 auto;">
-      <div class="aba aba-ativa" id="aba1">Aba 1</div>
-      <div class="aba" id="aba2">Aba 2</div>
-      <div class="aba" id="aba3">Aba 3</div>
-      <div class="aba" id="aba4">Aba 4</div>
-      <div class="aba" id="aba5">Aba 5</div>
+    <div id="publicidade-1" style="text-align:center;margin:16px 0;"></div>
+    <h2 style="width:70vw;max-width:70vw;text-align:left;font-size:3em;font-weight:bold;margin:32px auto 16px auto;color:#222;letter-spacing:2px;">DESTAQUES</h2>
+    <div class="destaque-abas" style="width:70vw;max-width:70vw;margin:0 auto;display:flex;justify-content:space-between;gap:12px;"></div>
+    <div class="quadro-destaque-amarelo">
+      <!-- Conteúdo do quadro pode ser inserido aqui -->
     </div>
-    <div class="destaque-quadro" style="width:100%;margin:0 auto;display:flex;align-items:flex-start;gap:32px;">
-      <img id="img-destaque" src="" alt="Imagem do destaque" style="height:230px;width:321px;border-radius:12px;box-shadow:0 2px 8px #ccc;object-fit:fill;">
-      <div id="texto-destaque" style="font-size:2rem;color:#222;font-family:'Ubuntu',Arial,sans-serif;max-width:60%;text-align:left;"></div>
-    </div>
-  </div>
-
-  <div class="campeonato-header" style="width:100%;display:flex;align-items:center;justify-content:center;gap:24px;margin:40px auto 0 auto;">
-    <img id="logo-campeonato" src="" alt="Logo Campeonato" style="height:72px;width:72px;object-fit:contain;border-radius:12px;">
-    <h2 id="titulo-campeonato" style="font-size:3rem;font-weight:bold;margin:0;">Título do Campeonato</h2>
-  </div>
-  <div style="width:100%;display:flex;justify-content:center;align-items:flex-start;gap:0;">
-    <div class="resultados-campeonato" style="width:480px;max-width:520px;margin:8px 0 0 0;padding:12px 0;align-self:flex-start;">
-      <table class="tabela-classificacao" style="width:100%;border-collapse:collapse;background:#000;border-radius:12px;overflow:hidden;">
-        <thead style="background:#FFD600;">
-          <tr>
-            <th colspan="7" style="padding:8px 0;text-align:center;font-size:1.3rem;color:#111;">Resultados</th>
-          </tr>
-        </thead>
-        <tbody id="corpo-resultados" style="background:#000;"></tbody>
-      </table>
-    </div>
-    <div class="classificacao-campeonato" style="width:40%;max-width:360px;margin:8px auto 0 auto;padding:12px 0;">
-      <table class="tabela-classificacao" style="width:100%;border-collapse:collapse;background:#000;border-radius:12px;overflow:hidden;">
-        <thead style="background:#FFD600;">
-          <tr>
-            <th style="padding:2px 1px;text-align:center;">Pos</th>
-            <th style="padding:2px 1px;text-align:center;"></th>
-            <th style="padding:2px 2px;text-align:left;" id="th-info-campeonato"></th>
-            <th style="padding:2px 1px;text-align:center;">Pts</th>
-            <th style="padding:2px 1px;text-align:center;">SG</th>
-          </tr>
-        </thead>
-        <tbody id="corpo-classificacao"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <script>
-  fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vS9MFvZCh0tVbBeZVVVEE7ufjMakoaL4shjAIQrC8YAUuwvtF8xyPPrc0jYTDWms0K1CVk05chIzOsT/pub?gid=988084325&single=true&output=csv')
-    .then(response => response.text())
-    .then(csv => {
-      const linhas = csv.split('\n');
-      const primeiraLinha = linhas[0].split(',');
-      const logoUrl = primeiraLinha[6]; // G1 é o índice 6
-      document.querySelector('.logo-competicao').src = logoUrl;
-    });
-  </script>
-  <script>
-  fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vS9MFvZCh0tVbBeZVVVEE7ufjMakoaL4shjAIQrC8YAUuwvtF8xyPPrc0jYTDWms0K1CVk05chIzOsT/pub?gid=988084325&single=true&output=csv')
-    .then(response => response.text())
-    .then(csv => {
-      const linhas = csv.split('\n');
-      const segundaLinha = linhas[1].split(',');
-      document.getElementById('logo-time1').src = segundaLinha[6]; // G2
-      document.getElementById('logo-time2').src = segundaLinha[7]; // H2
-      document.getElementById('placar-time1').textContent = segundaLinha[2]; // C2
-      document.getElementById('placar-time2').textContent = segundaLinha[3]; // D2
-
-      // Jogo 2
-      const jogo2Container = document.getElementById('jogo2-container');
-      jogo2Container.innerHTML = '';
-      const terceiraLinha = linhas[2].split(',');
-      if (terceiraLinha[1] && terceiraLinha[1].trim() !== "") {
-        const jogo2 = `
-          <div class='separador-vertical'></div>
-          <div class='jogo-resultado'>
-            <img class='logo-time' id='logo-time1-j2' src='' alt='Time 1'>
-            <span class='placar-time' id='placar-time1-j2'>0</span>
-            <span class='placar-separador'>:</span>
-            <span class='placar-time' id='placar-time2-j2'>0</span>
-            <img class='logo-time' id='logo-time2-j2' src='' alt='Time 2'>
-          </div>
-        `;
-        jogo2Container.insertAdjacentHTML('beforeend', jogo2);
-        document.getElementById('logo-time1-j2').src = terceiraLinha[6]; // G3
-        document.getElementById('logo-time2-j2').src = terceiraLinha[7]; // H3
-        document.getElementById('placar-time1-j2').textContent = terceiraLinha[2]; // C3
-        document.getElementById('placar-time2-j2').textContent = terceiraLinha[3]; // D3;
-      }
-      // Jogo 3
-      const quartaLinha = linhas[3].split(',');
-      if (quartaLinha[1] && quartaLinha[1].trim() !== "") {
-        const jogo3 = `
-          <div class='separador-vertical'></div>
-          <div class='jogo-resultado'>
-            <img class='logo-time' id='logo-time1-j3' src='' alt='Time 1'>
-            <span class='placar-time' id='placar-time1-j3'>0</span>
-            <span class='placar-separador'>:</span>
-            <span class='placar-time' id='placar-time2-j3'>0</span>
-            <img class='logo-time' id='logo-time2-j3' src='' alt='Time 2'>
-          </div>
-        `;
-        jogo2Container.insertAdjacentHTML('beforeend', jogo3);
-        document.getElementById('logo-time1-j3').src = quartaLinha[6]; // G4
-        document.getElementById('logo-time2-j3').src = quartaLinha[7]; // H4
-        document.getElementById('placar-time1-j3').textContent = quartaLinha[2]; // C4
-        document.getElementById('placar-time2-j3').textContent = quartaLinha[3]; // D4;
-      }
-      // Jogo 4
-      const quintaLinha = linhas[4].split(',');
-      if (quintaLinha[1] && quintaLinha[1].trim() !== "") {
-        const jogo4 = `
-          <div class='separador-vertical'></div>
-          <div class='jogo-resultado'>
-            <img class='logo-time' id='logo-time1-j4' src='' alt='Time 1'>
-            <span class='placar-time' id='placar-time1-j4'>0</span>
-            <span class='placar-separador'>:</span>
-            <span class='placar-time' id='placar-time2-j4'>0</span>
-            <img class='logo-time' id='logo-time2-j4' src='' alt='Time 2'>
-          </div>
-        `;
-        jogo2Container.insertAdjacentHTML('beforeend', jogo4);
-        document.getElementById('logo-time1-j4').src = quintaLinha[6]; // G5
-        document.getElementById('logo-time2-j4').src = quintaLinha[7]; // H5
-        document.getElementById('placar-time1-j4').textContent = quintaLinha[2]; // C5
-        document.getElementById('placar-time2-j4').textContent = quintaLinha[3]; // D5;
-      }
-    });
-  </script>
-  <script>
-const urlCSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS9MFvZCh0tVbBeZVVVEE7ufjMakoaL4shjAIQrC8YAUuwvtF8xyPPrc0jYTDWms0K1CVk05chIzOsT/pub?gid=988084325&single=true&output=csv';
-let dadosCompeticoes = [];
-let indiceCompeticao = 0;
-
-function renderCompeticao(competicao) {
-  document.getElementById('logo-competicao').src = competicao.logo;
-  // Jogo 1
-  document.getElementById('logo-time1').src = competicao.jogos[0].logo1;
-  document.getElementById('logo-time2').src = competicao.jogos[0].logo2;
-  document.getElementById('placar-time1').textContent = competicao.jogos[0].placar1;
-  document.getElementById('placar-time2').textContent = competicao.jogos[0].placar2;
-
-  // Limpa jogos extras
-  const jogo2Container = document.getElementById('jogo2-container');
-  jogo2Container.innerHTML = '';
-  // Adiciona jogos extras
-  for (let i = 1; i < competicao.jogos.length; i++) {
-    const jogo = competicao.jogos[i];
-    if (!jogo.mostrar) continue;
-    const bloco = `
-      <div class='separador-vertical'></div>
-      <div class='jogo-resultado'>
-        <img class='logo-time' src='${jogo.logo1}' alt='Time 1'>
-        <span class='placar-time'>${jogo.placar1}</span>
-        <span class='placar-separador'>:</span>
-        <span class='placar-time'>${jogo.placar2}</span>
-        <img class='logo-time' src='${jogo.logo2}' alt='Time 2'>
+    <h2 class="copa-titulo" style="width:70vw;max-width:70vw;text-align:left;font-size:2.2em;font-weight:bold;margin:16px auto 8px auto;color:#111;letter-spacing:2px;display:flex;align-items:center;gap:16px;">
+      <img src="https://upload.wikimedia.org/wikipedia/pt/9/9b/116px-UEFA_Champions_League_logo_2_svg.png" alt="Logo Copa" class="logo-copa" style="height:40px;width:40px;vertical-align:middle;">COPA SEU PLACAR
+    </h2>
+    <div id="publicidade-1" style="text-align:center;margin:16px 0;"></div>
+    <!-- Tabelas lado a lado -->
+    <div style="display:flex;flex-wrap:wrap;gap:32px;justify-content:center;align-items:flex-start;margin:0 auto 32px auto;max-width:98vw;" class="tabelas-copa-wrap">
+      <div style="width:35vw;min-width:220px;">
+        <table style="width:100%;border-collapse:collapse;background:#fffde7;border:2px solid #FFD600;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06);font-size:1.2em;">
+          <thead>
+            <tr style="background:#FFD600;color:#222;font-weight:bold;">
+              <th style="padding:12px 8px;border-bottom:2px solid #FFD600;text-align:center;">POS</th>
+              <th style="padding:12px 8px;border-bottom:2px solid #FFD600;text-align:center;"></th>
+              <th style="padding:12px 8px;border-bottom:2px solid #FFD600;">Chave</th>
+              <th style="padding:12px 8px;border-bottom:2px solid #FFD600;text-align:center;">PTS</th>
+              <th style="padding:12px 8px;border-bottom:2px solid #FFD600;text-align:center;">SG</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background:#111;color:#fff;"><td style="padding:10px 8px;text-align:center;color:#00e6c0;">1º</td><td style="text-align:center;"><img src="https://upload.wikimedia.org/wikipedia/commons/6/67/Logo_oficial_de_Universitario.png" alt="Emblema" style="height:32px;width:32px;"></td><td>Time Alpha</td><td style="text-align:center;">18</td><td style="text-align:center;">12</td></tr>
+            <tr style="background:#222;color:#fff;"><td style="padding:10px 8px;text-align:center;color:#00e6c0;">2º</td><td style="text-align:center;"><img src="https://upload.wikimedia.org/wikipedia/pt/9/9b/116px-UEFA_Champions_League_logo_2_svg.png" alt="Emblema" style="height:32px;width:32px;"></td><td>Time Beta</td><td style="text-align:center;">15</td><td style="text-align:center;">8</td></tr>
+            <tr style="background:#111;color:#fff;"><td style="padding:10px 8px;text-align:center;color:#00e6c0;">3º</td><td style="text-align:center;"><img src="https://upload.wikimedia.org/wikipedia/pt/9/9b/116px-UEFA_Champions_League_logo_2_svg.png" alt="Emblema" style="height:32px;width:32px;"></td><td>Time Gama</td><td style="text-align:center;">13</td><td style="text-align:center;">5</td></tr>
+            <tr style="background:#222;color:#fff;"><td style="padding:10px 8px;text-align:center;">4º</td><td style="text-align:center;"><img src="https://upload.wikimedia.org/wikipedia/pt/9/9b/116px-UEFA_Champions_League_logo_2_svg.png" alt="Emblema" style="height:32px;width:32px;"></td><td>Time Delta</td><td style="text-align:center;">11</td><td style="text-align:center;">3</td></tr>
+            <tr style="background:#111;color:#fff;"><td style="padding:10px 8px;text-align:center;">5º</td><td style="text-align:center;"><img src="https://upload.wikimedia.org/wikipedia/pt/9/9b/116px-UEFA_Champions_League_logo_2_svg.png" alt="Emblema" style="height:32px;width:32px;"></td><td>Time Sigma</td><td style="text-align:center;">9</td><td style="text-align:center;">0</td></tr>
+            <tr style="background:#222;color:#fff;"><td style="padding:10px 8px;text-align:center;">6º</td><td style="text-align:center;"><img src="https://upload.wikimedia.org/wikipedia/pt/9/9b/116px-UEFA_Champions_League_logo_2_svg.png" alt="Emblema" style="height:32px;width:32px;"></td><td>Time Omega</td><td style="text-align:center;">7</td><td style="text-align:center;">-2</td></tr>
+            <tr style="background:#111;color:#fff;"><td style="padding:10px 8px;text-align:center;">7º</td><td style="text-align:center;"><img src="https://upload.wikimedia.org/wikipedia/pt/9/9b/116px-UEFA_Champions_League_logo_2_svg.png" alt="Emblema" style="height:32px;width:32px;"></td><td>Time Zeta</td><td style="text-align:center;">4</td><td style="text-align:center;">-6</td></tr>
+          </tbody>
+        </table>
       </div>
-    `;
-    jogo2Container.insertAdjacentHTML('beforeend', bloco);
-  }
-}
-
-function prepararDados(csv) {
-  const linhas = csv.split('\n').map(l => l.split(','));
-  let numCompeticoes = 10;
-  if (linhas[0][15] && !isNaN(parseInt(linhas[0][15]))) {
-    numCompeticoes = parseInt(linhas[0][15]); // P1 é coluna 15 (índice 15)
-  }
-  dadosCompeticoes = [];
-  for (let i = 0; i < numCompeticoes; i++) {
-    const base = i * 6;
-    const logo = linhas[base][6];
-    const jogos = [
-      { logo1: linhas[base+1][6], logo2: linhas[base+1][7], placar1: linhas[base+1][2], placar2: linhas[base+1][3], mostrar: true },
-      { logo1: linhas[base+2][6], logo2: linhas[base+2][7], placar1: linhas[base+2][2], placar2: linhas[base+2][3], mostrar: linhas[base+2][1].trim() !== '' },
-      { logo1: linhas[base+3][6], logo2: linhas[base+3][7], placar1: linhas[base+3][2], placar2: linhas[base+3][3], mostrar: linhas[base+3][1].trim() !== '' },
-      { logo1: linhas[base+4][6], logo2: linhas[base+4][7], placar1: linhas[base+4][2], placar2: linhas[base+4][3], mostrar: linhas[base+4][1].trim() !== '' }
-    ];
-    dadosCompeticoes.push({ logo, jogos });
-  }
-}
-
-function iniciarTroca() {
-  renderCompeticao(dadosCompeticoes[indiceCompeticao]);
-  setInterval(() => {
-    indiceCompeticao = (indiceCompeticao + 1) % dadosCompeticoes.length;
-    renderCompeticao(dadosCompeticoes[indiceCompeticao]);
-  }, 7000);
-}
-
-fetch(urlCSV)
-  .then(response => response.text())
-  .then(csv => {
-    prepararDados(csv);
-    iniciarTroca();
-  });
-  </script>
+      <div style="width:35vw;min-width:220px;">
+        <table style="width:100%;border-collapse:collapse;background:#fffde7;border:2px solid #FFD600;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06);font-size:1.1em;">
+          <thead>
+            <tr style="background:#FFD600;color:#222;font-weight:bold;">
+              <th style="padding:10px 6px;"></th>
+              <th style="padding:10px 6px;">Resultados</th>
+              <th style="padding:10px 6px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background:#111;color:#fff;"><td style="text-align:left;height:40px;padding-left:10px;"><img src="https://upload.wikimedia.org/wikipedia/pt/9/9e/Gr%C3%AAmio_Esportivo_Novorizontino_logo.png" alt="Escudo" style="height:28px;width:28px;vertical-align:middle;margin-right:8px;">Time Alpha</td><td style="text-align:center;height:40px;">2 : 1</td><td style="text-align:right;height:40px;padding-right:10px;">Time Beta <img src="https://upload.wikimedia.org/wikipedia/pt/9/9b/116px-UEFA_Champions_League_logo_2_svg.png" alt="Escudo" style="height:28px;width:28px;vertical-align:middle;margin-left:8px;"></td></tr>
+            <tr style="background:#222;color:#fff;"><td style="text-align:left;height:40px;padding-left:10px;"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/EscudoCriciumaEC.svg/1200px-EscudoCriciumaEC.svg.png" alt="Escudo" style="height:28px;width:28px;vertical-align:middle;margin-right:8px;">Time Gama</td><td style="text-align:center;height:40px;">0 : 0</td><td style="text-align:right;height:40px;padding-right:10px;">Time Delta <img src="https://upload.wikimedia.org/wikipedia/commons/6/67/Logo_oficial_de_Universitario.png" alt="Escudo" style="height:28px;width:28px;vertical-align:middle;margin-left:8px;"></td></tr>
+            <tr style="background:#111;color:#fff;"><td style="text-align:left;height:40px;padding-left:10px;"><img src="https://upload.wikimedia.org/wikipedia/commons/6/67/Logo_oficial_de_Universitario.png" alt="Escudo" style="height:28px;width:28px;vertical-align:middle;margin-right:8px;">Time Sigma</td><td style="text-align:center;height:40px;">1 : 3</td><td style="text-align:right;height:40px;padding-right:10px;">Time Omega <img src="https://upload.wikimedia.org/wikipedia/pt/9/9b/116px-UEFA_Champions_League_logo_2_svg.png" alt="Escudo" style="height:28px;width:28px;vertical-align:middle;margin-left:8px;"></td></tr>
+          </tbody>
+        </table>
+        <table style="width:100%;border-collapse:collapse;background:#fffde7;border:2px solid #FFD600;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06);font-size:1.1em;margin-top:12px;">
+          <thead>
+            <tr style="background:#FFD600;color:#222;font-weight:bold;">
+              <th style="padding:10px 6px;"></th>
+              <th style="padding:10px 6px;">Próximos Jogos</th>
+              <th style="padding:10px 6px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background:#111;color:#fff;"><td style="text-align:left;height:40px;padding-left:10px;"><img src="https://upload.wikimedia.org/wikipedia/pt/9/9e/Gr%C3%AAmio_Esportivo_Novorizontino_logo.png" alt="Escudo" style="height:28px;width:28px;vertical-align:middle;margin-right:8px;">Time Epsilon</td><td style="text-align:center;height:40px;">:</td><td style="text-align:right;height:40px;padding-right:10px;">Time Theta <img src="https://upload.wikimedia.org/wikipedia/pt/9/9b/116px-UEFA_Champions_League_logo_2_svg.png" alt="Escudo" style="height:28px;width:28px;vertical-align:middle;margin-left:8px;"></td></tr>
+            <tr style="background:#222;color:#fff;"><td style="text-align:left;height:40px;padding-left:10px;"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/EscudoCriciumaEC.svg/1200px-EscudoCriciumaEC.svg.png" alt="Escudo" style="height:28px;width:28px;vertical-align:middle;margin-right:8px;">Time Lambda</td><td style="text-align:center;height:40px;">:</td><td style="text-align:right;height:40px;padding-right:10px;">Time Kappa <img src="https://upload.wikimedia.org/wikipedia/commons/6/67/Logo_oficial_de_Universitario.png" alt="Escudo" style="height:28px;width:28px;vertical-align:middle;margin-left:8px;"></td></tr>
+            <tr style="background:#111;color:#fff;"><td style="text-align:left;height:40px;padding-left:10px;"><img src="https://upload.wikimedia.org/wikipedia/commons/6/67/Logo_oficial_de_Universitario.png" alt="Escudo" style="height:28px;width:28px;vertical-align:middle;margin-right:8px;">Time Pi</td><td style="text-align:center;height:40px;">:</td><td style="text-align:right;height:40px;padding-right:10px;">Time Rho <img src="https://upload.wikimedia.org/wikipedia/pt/9/9b/116px-UEFA_Champions_League_logo_2_svg.png" alt="Escudo" style="height:28px;width:28px;vertical-align:middle;margin-left:8px;"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="publicidade-2" style="text-align:center;margin:16px 0;"></div>
+  </main>
+  <!-- Scripts JS agrupados no final do body -->
+  <!-- Scripts JS agrupados no final do body -->
   <script>
-fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vQKUCDbK0LpOTjPdCx_IV-YpT6MGeFL4QlHSNp7GuXBVCBR4jdcaowXIbswM9lDr20KzzJbBMxud6Qf/pub?gid=0&single=true&output=csv')
-  .then(response => response.text())
-  .then(csv => {
-    const linhas = csv.split('\n');
-    document.getElementById('logo-campeonato').src = linhas[0].split(',')[11]; // L1
-    document.getElementById('titulo-campeonato').textContent = linhas[0].split(',')[4]; // E1
-    document.getElementById('th-info-campeonato').textContent = linhas[3].split(',')[4]; // E4
-    // Preenche a tabela de classificação
-    const corpo = document.getElementById('corpo-classificacao');
-    corpo.innerHTML = '';
-    for (let i = 4; i < 11; i++) { // linhas 5 a 11
-      const linha = linhas[i].split(',');
-      const pos = linha[2]; // C
-      const logo = linha[11] || linha[12]; // L
-      const clube = linha[4]; // D
-      const pts = linha[5]; // F
-      const sg = linha[10]; // K
-      let corPos = '';
-      if (i === 4 || i === 5 || i === 6) corPos = "color:#00e6c0;font-weight:bold;";
-      corpo.insertAdjacentHTML('beforeend', `
-        <tr>
-          <td style='text-align:center;padding:8px 4px;${corPos}'>${pos}</td>
-          <td style='text-align:center;padding:8px 4px;'><img src='${logo}' alt='Logo' style='height:32px;width:32px;object-fit:contain;border-radius:6px;'></td>
-          <td style='text-align:left;padding:8px 8px;'>${clube}</td>
-          <td style='text-align:center;padding:8px 4px;'>${pts}</td>
-          <td style='text-align:center;padding:8px 4px;'>${sg}</td>
-        </tr>
-      `);
-    }
-    // Preenche 3 resultados dos jogos 1, 2 e 3
-    const corpoResultados = document.getElementById('corpo-resultados');
-    corpoResultados.innerHTML = '';
-    // Pega os índices das linhas dos jogos nas células W14, W15, W16
-    const idxJogo1 = parseInt(linhas[13].split(',')[22]); // W14
-    const idxJogo2 = parseInt(linhas[14].split(',')[22]); // W15
-    const idxJogo3 = parseInt(linhas[15].split(',')[22]); // W16
-    [idxJogo1, idxJogo2, idxJogo3].forEach(idx => {
-      if (!isNaN(idx) && linhas[idx]) {
-        const linha = linhas[idx].split(',');
-        const logo1 = linha[11] ? linha[11].trim() : '';
-        const nome1 = linha[4] ? linha[4].trim() : '';
-        const res1 = linha[5] ? linha[5].trim() : '';
-        const res2 = linha[6] ? linha[6].trim() : '';
-        const nome2 = linha[7] ? linha[7].trim() : '';
-        const logo2 = linha[12] ? linha[12].trim() : '';
-        corpoResultados.insertAdjacentHTML('beforeend', `
-          <tr style='background:#000;'>
-            <td style='padding:8px 4px;'><img src='${logo1}' alt='Logo Time 1' style='height:32px;width:32px;object-fit:contain;border-radius:6px;'></td>
-            <td style='color:#fff;font-weight:bold;padding:8px 8px;'>${nome1}</td>
-            <td style='color:#fff;font-size:1.2em;font-weight:bold;padding:8px 4px;'>${res1}</td>
-            <td style='color:#fff;font-size:1.2em;font-weight:bold;padding:8px 4px;'>:</td>
-            <td style='color:#fff;font-size:1.2em;font-weight:bold;padding:8px 4px;'>${res2}</td>
-            <td style='color:#fff;font-weight:bold;padding:8px 8px;'>${nome2}</td>
-            <td style='padding:8px 4px;'><img src='${logo2}' alt='Logo Time 2' style='height:32px;width:32px;object-fit:contain;border-radius:6px;'></td>
-          </tr>
-        `);
-      }
-    });
-  });
-  </script>
-  <script>
-fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vS9MFvZCh0tVbBeZVVVEE7ufjMakoaL4shjAIQrC8YAUuwvtF8xyPPrc0jYTDWms0K1CVk05chIzOsT/pub?gid=1891517616&single=true&output=csv')
-  .then(response => response.text())
-  .then(csv => {
-    const linhas = csv.split('\n');
-    const segundaLinha = linhas[1].split(',');
-    const urlImg = segundaLinha[2]; // C2
-    if (urlImg && urlImg.trim() !== "") {
-      const img = document.getElementById('img-publicidade1');
-      img.src = urlImg;
-    }
-  });
-  </script>
-  <script>
-fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vS9MFvZCh0tVbBeZVVVEE7ufjMakoaL4shjAIQrC8YAUuwvtF8xyPPrc0jYTDWms0K1CVk05chIzOsT/pub?gid=311692731&single=true&output=csv')
-  .then(response => response.text())
-  .then(csv => {
-    const linhas = csv.split('\n');
-    const nomesAbas = [
-      linhas[1].split(',')[0], // A2
-      linhas[2].split(',')[0], // A3
-      linhas[3].split(',')[0], // A4
-      linhas[4].split(',')[0], // A5
-      linhas[5].split(',')[0]  // A6
-    ];
-    document.getElementById('aba1').textContent = nomesAbas[0];
-    document.getElementById('aba2').textContent = nomesAbas[1];
-    document.getElementById('aba3').textContent = nomesAbas[2];
-    document.getElementById('aba4').textContent = nomesAbas[3];
-    document.getElementById('aba5').textContent = nomesAbas[4];
+  const apiKey = 'AIzaSyCyAHN05BGmKwS75kfcFa5mgjgTy9YeZQU';
+  const spreadsheetIdSite = '16CHShH8tY8kbmoysK-0Fd5tIlxnnUYYi8zNYPsOwsqY';
 
-    // Imagens dos destaques
-    const imagensDestaque = [
-      linhas[1].split(',')[1], // B2
-      linhas[2].split(',')[1], // B3
-      linhas[3].split(',')[1], // B4
-      linhas[4].split(',')[1], // B5
-      linhas[5].split(',')[1]  // B6
-    ];
-    // Textos dos destaques
-    const textosDestaque = [
-      linhas[1].split(',')[2], // C2
-      linhas[2].split(',')[2], // C3
-      linhas[3].split(',')[2], // C4
-      linhas[4].split(',')[2], // C5
-      linhas[5].split(',')[2]  // C6
-    ];
-    let abaAtual = 0;
-    let intervalo;
-    function trocarAba(idx) {
-      abaAtual = idx;
-      document.getElementById('img-destaque').src = imagensDestaque[idx];
-      document.getElementById('texto-destaque').textContent = textosDestaque[idx];
-      document.querySelectorAll('.aba').forEach(el => el.classList.remove('aba-ativa'));
-      document.getElementById('aba'+(idx+1)).classList.add('aba-ativa');
-    }
-    function iniciarLoopAbas() {
-      intervalo = setInterval(() => {
-        abaAtual = (abaAtual + 1) % 5;
-        trocarAba(abaAtual);
-      }, 7000);
-    }
-    trocarAba(0);
-    iniciarLoopAbas();
-    for (let i = 1; i <= 5; i++) {
-      document.getElementById('aba'+i).addEventListener('click', function() {
-        clearInterval(intervalo);
-        trocarAba(i-1);
-        iniciarLoopAbas();
+    // Carregar nomes das abas de DESTAQUES!A2:A6
+    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetIdSite}/values/DESTAQUES!A2:A6?key=${apiKey}`)
+      .then(response => response.json())
+      .then(data => {
+        const abas = document.querySelector('.destaque-abas');
+        abas.innerHTML = '';
+        if (data.values && Array.isArray(data.values)) {
+          data.values.forEach((linha, idx) => {
+            const nome = linha[0] || `Aba ${idx+1}`;
+            const btn = document.createElement('button');
+            btn.className = 'aba';
+            btn.textContent = nome;
+            btn.style.flex = '1';
+            btn.style.padding = '16px 0';
+            btn.style.fontSize = '1.1em';
+            btn.style.border = 'none';
+            btn.style.borderRadius = '8px';
+            btn.style.fontWeight = 'bold';
+            btn.style.cursor = 'pointer';
+            btn.style.transition = 'background 0.2s, color 0.2s';
+            btn.addEventListener('click', function() {
+              abas.querySelectorAll('.aba').forEach(b => b.classList.remove('ativa'));
+              btn.classList.add('ativa');
+              atualizarQuadroDestaque(idx);
+            });
+            abas.appendChild(btn);
+          });
+          // Inicializa a primeira aba como ativa e carrega destaque
+          if (abas.querySelector('.aba')) {
+            abas.querySelector('.aba').classList.add('ativa');
+            atualizarQuadroDestaque(0);
+          }
+        }
       });
+
+    // Função para atualizar o quadro amarelo claro conforme a aba ativa
+    function atualizarQuadroDestaque(idx) {
+      fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetIdSite}/values/DESTAQUES!B2:C6?key=${apiKey}`)
+        .then(response => response.json())
+        .then(data => {
+          const quadro = document.querySelector('.quadro-destaque-amarelo');
+          quadro.innerHTML = '';
+          if (data.values && data.values[idx]) {
+            const imgUrl = data.values[idx][0];
+            const texto = data.values[idx][1];
+            if (imgUrl) {
+              const img = document.createElement('img');
+              img.src = imgUrl;
+              img.alt = 'Imagem destaque';
+              img.style.height = '18vw';
+              img.style.width = '28vw';
+              img.style.maxWidth = '60vw';
+              img.style.maxHeight = '28vw';
+              img.style.objectFit = 'fill';
+              img.style.marginLeft = '6vw';
+              img.style.marginRight = '6vw';
+              img.style.borderRadius = '16px';
+              img.style.boxShadow = '0 6px 24px rgba(0,0,0,0.12)';
+              quadro.appendChild(img);
+            }
+            if (texto) {
+              const span = document.createElement('span');
+              span.textContent = texto;
+              span.style.fontSize = '2.5vw';
+              span.style.fontWeight = 'bold';
+              span.style.color = '#222';
+              span.style.alignSelf = 'flex-start';
+              quadro.appendChild(span);
+            }
+          } else {
+            quadro.textContent = 'Nenhum destaque disponível.';
+          }
+        })
+        .catch(() => {
+          const quadro = document.querySelector('.quadro-destaque-amarelo');
+          quadro.textContent = 'Erro ao carregar destaque.';
+        });
     }
-  });
+    // Carregar imagem da Publicidade 1 da célula PUBLICIDADE!C2
+    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetIdSite}/values/PUBLICIDADE!C2?key=${apiKey}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.values && data.values[0] && data.values[0][0]) {
+          const img = document.createElement('img');
+          img.src = data.values[0][0];
+          img.alt = 'Publicidade 1';
+          img.style.maxWidth = '98vw';
+          img.style.height = 'auto';
+          img.style.borderRadius = '12px';
+          img.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)';
+          document.getElementById('publicidade-1').appendChild(img);
+          // Adiciona também na publicidade-2
+          const img2 = img.cloneNode(true);
+          img2.alt = 'Publicidade 2';
+          document.getElementById('publicidade-2').appendChild(img2);
+        }
+      });
+
+    // Faixa de resultados
+    function renderCompeticao(logoCell, jogosRange) {
+      const barra = document.getElementById('resultados-bar');
+      barra.style.opacity = '0';
+      setTimeout(function() {
+        barra.innerHTML = '<img class="logo-competicao" id="logo-competicao" src="" alt="Logo Competição"><div class="separador-vertical"></div>';
+        // Carrega logo
+        fetch('https://sheets.googleapis.com/v4/spreadsheets/' + spreadsheetIdSite + '/values/' + logoCell + '?key=' + apiKey)
+          .then(function(response) { return response.json(); })
+          .then(function(data) {
+            if (data.values && data.values[0] && data.values[0][0]) {
+              document.getElementById('logo-competicao').src = data.values[0][0];
+            } else {
+              document.getElementById('logo-competicao').alt = 'Logo não encontrada';
+            }
+          })
+          .catch(function() {
+            document.getElementById('logo-competicao').alt = 'Erro ao carregar logo';
+          });
+        // Carrega jogos
+        fetch('https://sheets.googleapis.com/v4/spreadsheets/' + spreadsheetIdSite + '/values/' + jogosRange + '?key=' + apiKey)
+          .then(function(response) { return response.json(); })
+          .then(function(data) {
+            var algumJogo = false;
+            if (data.values && Array.isArray(data.values)) {
+              data.values.forEach(function(linha) {
+                if (linha[0] && linha[0].trim() !== "") {
+                  algumJogo = true;
+                  var htmlJogo = '<div class="jogo-resultado">' +
+                    '<img class="logo-time" src="' + linha[5] + '" alt="Time 1">' +
+                    '<span class="placar-time">' + linha[1] + '</span>' +
+                    '<span class="placar-separador">:</span>' +
+                    '<span class="placar-time">' + linha[2] + '</span>' +
+                    '<img class="logo-time" src="' + linha[6] + '" alt="Time 2">' +
+                    '</div>' +
+                    '<div class="separador-vertical"></div>';
+                barra.insertAdjacentHTML('beforeend', htmlJogo);
+                }
+              });
+            }
+            if (!algumJogo) {
+              barra.insertAdjacentHTML('beforeend', '<span style="color:#c00;font-weight:bold;">Nenhum resultado encontrado na planilha.</span>');
+            }
+            setTimeout(function() { barra.style.opacity = '1'; }, 100);
+          })
+          .catch(function() {
+            barra.insertAdjacentHTML('beforeend', '<span style="color:#c00;font-weight:bold;">Erro ao carregar resultados da planilha.</span>');
+            setTimeout(function() { barra.style.opacity = '1'; }, 100);
+          });
+      }, 300);
+    }
+
+    // Configuração dos campeonatos
+    function gerarCampeonatos(qtd) {
+      var comps = [];
+      for (var i = 0; i < qtd; i++) {
+        var baseLogo = 1 + i * 6;
+        var baseJogo = 2 + i * 6;
+        comps.push({
+          logo: 'JOGOS EXIBIDOS!G' + baseLogo,
+          jogos: 'JOGOS EXIBIDOS!B' + baseJogo + ':H' + (baseJogo+3)
+        });
+      }
+      return comps;
+    }
+
+    var campeonatos = [];
+    var atual = 0;
+
+    // Busca valor de P1 e inicializa alternância
+    fetch('https://sheets.googleapis.com/v4/spreadsheets/' + spreadsheetIdSite + '/values/JOGOS EXIBIDOS!P1?key=' + apiKey)
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        var qtd = 1;
+        if (data.values && data.values[0] && !isNaN(parseInt(data.values[0][0]))) {
+          qtd = Math.max(1, Math.min(10, parseInt(data.values[0][0])));
+        }
+        campeonatos = gerarCampeonatos(qtd);
+        function alternarCompeticao() {
+          renderCompeticao(campeonatos[atual].logo, campeonatos[atual].jogos);
+          atual = (atual + 1) % campeonatos.length;
+        }
+        alternarCompeticao();
+        setInterval(alternarCompeticao, 7000);
+      });
   </script>
+    <footer class="footer">
+      <div class="footer-content">
+        <img src="https://i.postimg.cc/Y0zYJJnX/LOGO-2.png" alt="Logo Seu Placar" class="footer-logo">
+        <div class="footer-info">
+          <span style="font-weight:bold;font-size:1.2em;color:#FFD600;">SEU PLACAR ESPORTES</span><br>
+          <span style="color:#FFD600;font-size:0.95em;margin-top:8px;">© Criado por MR Tecnologia.</span>
+          <span style="display:flex;align-items:center;gap:6px;color:#fff;font-size:1em;margin-top:4px;">
+            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram" style="height:20px;width:20px;filter:invert(80%) sepia(100%) saturate(500%) hue-rotate(320deg);">@SeuPlacarbr
+          </span>
+        </div>
+      </div>
+    </footer>
+  <style>
+    .footer {
+      width: 100vw;
+      background: #111;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 0 16px 0;
+      box-sizing: border-box;
+      margin-top: 0;
+      border-top: 3px solid #FFD600;
+    }
+    .footer-content {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      max-width: 900px;
+      width: 90vw;
+      justify-content: flex-start;
+    }
+    .footer-logo {
+      height: 84px;
+      width: auto;
+      margin-right: 24px;
+      border-radius: 12px;
+      background: #222;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      padding: 4px;
+    }
+    .footer-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    @media (max-width: 700px) {
+      .footer-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        width: 98vw;
+      }
+      .footer-logo {
+        height: 54px;
+        margin-right: 0;
+      }
+      .footer-info span {
+        font-size: 1em !important;
+      }
+    }
+  </style>
 </body>
 </html>
